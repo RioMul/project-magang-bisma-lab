@@ -1,0 +1,50 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: bisma-app-dev
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+      - ./php.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - bisma-network
+    depends_on:
+      - database
+
+  nginx:
+    image: nginx:alpine
+    container_name: bisma-nginx-dev
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - bisma-network
+    depends_on:
+      - app
+
+  database:
+    image: mysql:8.0
+    container_name: bisma-database
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    env_file:
+      - .env.docker
+    networks:
+      - bisma-network
+    volumes:
+      - bisma_dbdata:/var/lib/mysql
+
+networks:
+  bisma-network:
+    driver: bridge
+
+volumes:
+  bisma_dbdata:
+    driver: local
