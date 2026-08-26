@@ -19,19 +19,23 @@ class Order extends Model
         'customer_whatsapp',
         'desired_domain',
         'total_amount',
+        'payment_method',
         'status',
         'notes',
     ];
+
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+
     public function template()
     {
         return $this->belongsTo(Template::class);
     }
+
 
     public function serverPackage()
     {

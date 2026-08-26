@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class OrderWizardController extends Controller
+
+//template
+
 {
-    // STEP 1: TEMPLATE
     public function template(Request $request)
     {
         return $this->selectTemplate($request);
@@ -41,7 +43,14 @@ class OrderWizardController extends Controller
             ->values()
             ->toArray();
 
-        return view('order.template', compact('templates', 'categories', 'selectedCategory'));
+        return view(
+            'order.template',
+            compact(
+                'templates',
+                'categories',
+                'selectedCategory'
+            )
+        );
     }
 
     public function storeTemplate(Request $request)
@@ -50,79 +59,166 @@ class OrderWizardController extends Controller
             'template_id' => 'required|exists:templates,id',
         ]);
 
-        session(['order.template_id' => $validated['template_id']]);
-        return redirect()->route('order.domain');
+        session([
+            'order.template_id' => $validated['template_id'],
+        ]);
+
+        return redirect()
+            ->route('order.domain');
     }
 
-    // STEP 2: DOMAIN
+//DOMAIN
+
     public function searchDomain(Request $request)
     {
         if (!session('order.template_id')) {
-            return redirect()->route('order.template')
-                ->with('error', 'Silakan pilih template terlebih dahulu sebelum melanjutkan ke domain.');
+
+            return redirect()
+                ->route('order.template')
+                ->with(
+                    'error',
+                    'Silakan pilih template terlebih dahulu.'
+                );
         }
 
-        $selectedTemplate = Template::find(session('order.template_id'));
+        $selectedTemplate = Template::find(
+            session('order.template_id')
+        );
+
         $searchQuery = $request->query('q');
+
         $domainResults = [];
 
         if ($searchQuery) {
-            $cleanName = preg_replace('/[^a-zA-Z0-9-]/', '', strtolower($searchQuery));
-            
+
+            $cleanName = preg_replace(
+                '/[^a-zA-Z0-9-]/',
+                '',
+                strtolower($searchQuery)
+            );
+
             $extensions = [
-                ['ext' => '.com', 'price' => 150000, 'available' => true],
-                ['ext' => '.id', 'price' => 225000, 'available' => ($cleanName !== 'tokombakhars' && $cleanName !== 'bismartech')],
-                ['ext' => '.co.id', 'price' => 275000, 'available' => true],
-                ['ext' => '.net', 'price' => 140000, 'available' => true],
-                ['ext' => '.org', 'price' => 140000, 'available' => false],
+                [
+                    'ext' => '.com',
+                    'price' => 150000,
+                    'available' => true,
+                ],
+                [
+                    'ext' => '.id',
+                    'price' => 225000,
+                    'available' => true,
+                ],
+                [
+                    'ext' => '.co.id',
+                    'price' => 275000,
+                    'available' => true,
+                ],
+                [
+                    'ext' => '.net',
+                    'price' => 140000,
+                    'available' => true,
+                ],
+                [
+                    'ext' => '.org',
+                    'price' => 140000,
+                    'available' => false,
+                ],
             ];
 
-            foreach ($extensions as $ext) {
+            foreach ($extensions as $extension) {
+
                 $domainResults[] = [
-                    'domain' => $cleanName . $ext['ext'],
-                    'price' => $ext['price'],
-                    'available' => $ext['available']
+                    'domain' =>
+                        $cleanName . $extension['ext'],
+
+                    'price' =>
+                        $extension['price'],
+
+                    'available' =>
+                        $extension['available'],
                 ];
             }
         }
 
-        return view('order.domain', compact('selectedTemplate', 'searchQuery', 'domainResults'));
+        return view(
+            'order.domain',
+            compact(
+                'selectedTemplate',
+                'searchQuery',
+                'domainResults'
+            )
+        );
     }
 
     public function storeDomain(Request $request)
     {
         $validated = $request->validate([
             'selected_domain' => 'required|string',
-            'domain_price'    => 'nullable|numeric',
+            'domain_price' => 'required|numeric',
         ]);
 
         session([
-            'order.domain'       => $validated['selected_domain'],
-            'order.domain_price' => $validated['domain_price'] ?? 150000,
+            'order.domain' =>
+                $validated['selected_domain'],
+
+            'order.domain_price' =>
+                $validated['domain_price'],
         ]);
 
-        return redirect()->route('order.package');
+        return redirect()
+            ->route('order.package');
     }
 
-    // STEP 3: PACKAGE
-    public function selectPackage(Request $request)
+//Package
+
+    public function selectPackage()
     {
         if (!session('order.template_id')) {
-            return redirect()->route('order.template')
-                ->with('error', 'Anda harus memilih template terlebih dahulu.');
+
+            return redirect()
+                ->route('order.template')
+                ->with(
+                    'error',
+                    'Silakan pilih template terlebih dahulu.'
+                );
         }
+
         if (!session('order.domain')) {
-            return redirect()->route('order.domain')
-                ->with('error', 'Anda harus memilih domain terlebih dahulu sebelum masuk ke paket harga.');
+
+            return redirect()
+                ->route('order.domain')
+                ->with(
+                    'error',
+                    'Silakan pilih domain terlebih dahulu.'
+                );
         }
 
-        $packages = ServerPackage::where('is_active', true)->get();
-        $templateId = session('order.template_id');
-        $selectedTemplate = Template::find($templateId);
-        $selectedPackageId = session('order.package_id');
-        $selectedDomain = session('order.domain');
+        $packages = ServerPackage::where(
+            'is_active',
+            true
+        )->get();
 
-        return view('order.package', compact('packages', 'selectedTemplate', 'selectedPackageId', 'selectedDomain'));
+        $selectedTemplate = Template::find(
+            session('order.template_id')
+        );
+
+        $selectedPackageId = session(
+            'order.package_id'
+        );
+
+        $selectedDomain = session(
+            'order.domain'
+        );
+
+        return view(
+            'order.package',
+            compact(
+                'packages',
+                'selectedTemplate',
+                'selectedPackageId',
+                'selectedDomain'
+            )
+        );
     }
 
     public function storePackage(Request $request)
@@ -131,125 +227,387 @@ class OrderWizardController extends Controller
             'package_id' => 'required|exists:server_packages,id',
         ]);
 
-        session(['order.package_id' => $validated['package_id']]);
+        session([
+            'order.package_id' =>
+                $validated['package_id'],
+        ]);
 
-        return redirect()->route('order.checkout');
+        return redirect()
+            ->route('order.checkout');
     }
 
-    // STEP 4: CHECKOUT (PEMBAYARAN)
-    public function checkout(Request $request)
+//CHECKOUT
+  
+
+    public function checkout()
     {
-        if (!session('order.template_id') || !session('order.domain') || !session('order.package_id')) {
-            return redirect()->route('order.template')
-                ->with('error', 'Sesi pemesanan belum lengkap. Silakan lengkapi dari awal.');
+        if (
+            !session('order.template_id') ||
+            !session('order.domain') ||
+            !session('order.package_id')
+        ) {
+
+            return redirect()
+                ->route('order.template')
+                ->with(
+                    'error',
+                    'Sesi pesanan belum lengkap.'
+                );
         }
 
-        $template = Template::find(session('order.template_id'));
-        $package = ServerPackage::find(session('order.package_id'));
-        $domain = session('order.domain');
-        $domainPrice = session('order.domain_price', 150000);
+        $template = Template::findOrFail(
+            session('order.template_id')
+        );
 
-        return view('order.checkout', compact('template', 'package', 'domain', 'domainPrice'));
+        $package = ServerPackage::findOrFail(
+            session('order.package_id')
+        );
+
+        $domain = session(
+            'order.domain'
+        );
+
+        $domainPrice = session(
+            'order.domain_price'
+        );
+
+        $totalAmount =
+            $package->price +
+            $domainPrice;
+
+        return view(
+            'order.checkout',
+            compact(
+                'template',
+                'package',
+                'domain',
+                'domainPrice',
+                'totalAmount'
+            )
+        );
     }
 
-    // PROSES LOGIN DARI HALAMAN CHECKOUT
-    public function processCheckLogin(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+//PROSES CHECKOUT
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            // Kembalikan ke checkout dengan status akun terautentikasi (Navbar otomatis berubah)
-            return back()->with('success', 'Berhasil masuk! Silakan klik tombol pembayaran untuk menyelesaikan pesanan.');
-        }
-
-        return back()->withErrors([
-            'login_email' => 'Email atau password yang Anda masukkan salah.',
-        ])->withInput();
-    }
-
-    // PROSES REGISTER DARI HALAMAN CHECKOUT
-    public function processCheckRegister(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        Auth::login($user);
-
-        // Kembalikan ke checkout dengan status akun terautentikasi (Navbar otomatis berubah)
-        return back()->with('success', 'Akun berhasil dibuat! Silakan klik tombol pembayaran untuk menyelesaikan pesanan.');
-    }
-
-    // EKSEKUSI PEMBAYARAN FINAL (Ketika Tombol Bayar Ditekan Lagi)
     public function processCheckout(Request $request)
     {
-        if (!Auth::check()) {
-            return back()->with('error', 'Mohon masuk atau buat akun terlebih dahulu.');
-        }
-
-        $request->validate([
-            'payment_method' => 'nullable|string',
+        $validated = $request->validate([
+            'payment_method' => [
+                'required',
+                'in:bank_transfer,credit_card,ewallet,qris',
+            ],
         ]);
 
-        if ($request->filled('payment_method')) {
-            session(['order.payment_method' => $request->payment_method]);
+        session([
+            'order.payment_method' =>
+                $validated['payment_method'],
+        ]);
+
+        if (!Auth::check()) {
+
+            return redirect()
+                ->route('order.check_register');
         }
 
         return $this->finalizeOrder();
     }
 
-    // FINALISASI ORDER KE DATABASE
+//CHECK REGISTER
+
+   public function checkRegister()
+{
+    if (Auth::check()) {
+        return redirect()->route('order.checkout');
+    }
+
+    if (
+        !session('order.template_id') ||
+        !session('order.domain') ||
+        !session('order.package_id')
+    ) {
+        return redirect()
+            ->route('order.template')
+            ->with(
+                'error',
+                'Sesi pesanan belum lengkap.'
+            );
+    }
+
+    $template = Template::findOrFail(
+        session('order.template_id')
+    );
+
+    $package = ServerPackage::findOrFail(
+        session('order.package_id')
+    );
+
+    $domain = session('order.domain');
+
+    $domainPrice = session(
+        'order.domain_price',
+        150000
+    );
+
+    return view(
+        'order.check_register',
+        compact(
+            'template',
+            'package',
+            'domain',
+            'domainPrice'
+        )
+    );
+}
+
+//LOGIN DARI CHECK REGISTER
+
+
+    public function processCheckLogin(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => [
+                'required',
+                'email',
+            ],
+
+            'password' => [
+                'required',
+            ],
+        ]);
+
+        if (
+            !Auth::attempt(
+                $validated,
+                $request->boolean('remember')
+            )
+        ) {
+
+            return back()
+                ->withErrors([
+                    'login_email' =>
+                        'Email atau password salah.',
+                ])
+                ->withInput();
+        }
+
+        $request
+            ->session()
+            ->regenerate();
+
+        return redirect()
+            ->route('order.checkout')
+            ->with(
+                'success',
+                'Berhasil masuk. Silakan lanjutkan pembayaran.'
+            );
+    }
+
+//REGISTER DARI CHECK REGISTER
+
+    public function processCheckRegister(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+            ],
+
+            'password' => [
+                'required',
+                'confirmed',
+                'min:8',
+            ],
+        ]);
+
+        $user = User::create([
+            'name' =>
+                $validated['name'],
+
+            'email' =>
+                $validated['email'],
+
+            'password' =>
+                Hash::make(
+                    $validated['password']
+                ),
+        ]);
+
+        Auth::login($user);
+
+        $request
+            ->session()
+            ->regenerate();
+
+        return redirect()
+            ->route('order.checkout')
+            ->with(
+                'success',
+                'Akun berhasil dibuat. Silakan lanjutkan pembayaran.'
+            );
+    }
+
+    //FINALISASI ORDER
+
     private function finalizeOrder()
     {
-        $packageId   = session('order.package_id');
-        $templateId  = session('order.template_id');
-        $domain      = session('order.domain');
-        $domainPrice = session('order.domain_price', 150000);
+        $templateId = session(
+            'order.template_id'
+        );
 
-        if (!$packageId || !$templateId || !$domain) {
-            return redirect()->route('order.package')
-                ->with('error', 'Sesi pesanan Anda kedaluwarsa. Silakan pilih paket kembali.');
+        $packageId = session(
+            'order.package_id'
+        );
+
+        $domain = session(
+            'order.domain'
+        );
+
+        $domainPrice = session(
+            'order.domain_price'
+        );
+
+        $paymentMethod = session(
+            'order.payment_method'
+        );
+
+
+        if (
+            !$templateId ||
+            !$packageId ||
+            !$domain ||
+            !$paymentMethod
+        ) {
+
+            return redirect()
+                ->route('order.checkout')
+                ->with(
+                    'error',
+                    'Data pesanan belum lengkap.'
+                );
         }
 
-        $package = ServerPackage::find($packageId);
 
-        if (!$package) {
-            return redirect()->route('order.package')
-                ->with('error', 'Paket server tidak ditemukan. Silakan pilih ulang.');
-        }
+        $template = Template::findOrFail(
+            $templateId
+        );
 
-        $totalPrice = $package->price + $domainPrice;
+        $package = ServerPackage::findOrFail(
+            $packageId
+        );
 
-        Order::create([
-            'user_id'           => Auth::id(),
-            'template_id'       => $templateId,
-            'server_package_id' => $packageId,
-            'domain'            => $domain,
-            'total_price'       => $totalPrice, 
-            'payment_method'    => session('order.payment_method', 'bank_transfer'),
-            'status'            => 'paid',
+
+        $totalAmount =
+            $package->price +
+            $domainPrice;
+
+
+        $order = Order::create([
+
+            'order_number' =>
+                $this->generateOrderNumber(),
+
+            'user_id' =>
+                Auth::id(),
+
+            'template_id' =>
+                $template->id,
+
+            'server_package_id' =>
+                $package->id,
+
+            'customer_name' =>
+                Auth::user()->name,
+
+            'customer_email' =>
+                Auth::user()->email,
+
+            'customer_whatsapp' =>
+                '-',
+
+            'desired_domain' =>
+                $domain,
+
+            'total_amount' =>
+                $totalAmount,
+
+            'payment_method' =>
+                $paymentMethod,
+
+            'status' =>
+                'paid',
+
+            'notes' =>
+                null,
         ]);
 
         session()->forget([
-            'order.template_id', 
-            'order.domain', 
-            'order.domain_price', 
-            'order.package_id', 
-            'order.payment_method'
+            'order.template_id',
+            'order.domain',
+            'order.domain_price',
+            'order.package_id',
+            'order.payment_method',
         ]);
 
-        return back()->with('payment_success', 'Pembayaran berhasil! Nota pesanan telah dikirimkan ke email Anda.');
+
+        return redirect()
+            ->route(
+                'order.invoice',
+                $order->order_number
+            )
+            ->with(
+                'payment_success',
+                'Pembayaran berhasil!'
+            );
+    }
+
+    //INVOICE
+
+    public function invoice(Order $order)
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $order->load([
+            'template',
+            'serverPackage',
+        ]);
+
+        return view(
+            'order.invoice',
+            compact('order')
+        );
+    }
+
+//GENERATE ORDER NUMBER
+
+    private function generateOrderNumber(): string
+    {
+        do {
+
+            $orderNumber =
+                'BISMA-' .
+                now()->format('Ymd') .
+                '-' .
+                strtoupper(
+                    str()->random(6)
+                );
+
+        } while (
+            Order::where(
+                'order_number',
+                $orderNumber
+            )->exists()
+        );
+
+        return $orderNumber;
     }
 }

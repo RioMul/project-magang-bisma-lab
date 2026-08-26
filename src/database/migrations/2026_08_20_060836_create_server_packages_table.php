@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('server_packages', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('code')->unique(); // Pastikan kolom code ada di sini
+            $table->string('code')->unique();
             $table->decimal('price', 10, 2);
             $table->text('description')->nullable();
             $table->json('features')->nullable();
