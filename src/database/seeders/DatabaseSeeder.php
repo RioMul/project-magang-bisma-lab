@@ -21,5 +21,10 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Tambahkan pemanggilan seeder platform di sini
+        $this->call([
+            PlatformInitSeeder::class,
+        ]);
     }
 }

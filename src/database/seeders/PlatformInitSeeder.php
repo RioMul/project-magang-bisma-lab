@@ -10,57 +10,116 @@ class PlatformInitSeeder extends Seeder
 {
     public function run(): void
     {
-        Template::create([
-            'name' => 'Nexus Corporate',
-            'slug' => 'nexus-corporate',
-            'category' => 'Company',
-            'description' => 'Website profil perusahaan elegan dengan form kontak, katalog layanan, dan optimasi SEO.',
-            'preview_image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&auto=format&fit=crop&q=80',
-            'demo_url' => 'https://example.com/demo/company',
-            'setup_price' => 175000,
-            'is_active' => true,
-        ]);
+        // 1. Data Paket Server
+        $packages = [
+            [
+                'name' => 'Paket S',
+                'code' => 'S',
+                'price' => 99000,
+                'description' => 'Perfect for small portfolios and personal landing pages.',
+                'features' => ['Single Landing Page', 'Domain .com (Free 1th)', 'E-commerce Features'],
+                'is_popular' => false,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Paket M',
+                'code' => 'M',
+                'price' => 249000,
+                'description' => 'Complete toolkit for scaling businesses with custom branding and analytics.',
+                'features' => ['Up to 5 Pages', 'Business Email (3)', 'Basic SEO Setup'],
+                'is_popular' => true,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Paket L',
+                'code' => 'L',
+                'price' => 499000,
+                'description' => 'Perfect for growing businesses needing higher performance and integration.',
+                'features' => ['Unlimited Pages', 'E-commerce Integration', 'Payment Gateway'],
+                'is_popular' => false,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Paket XL',
+                'code' => 'XL',
+                'price' => 999000,
+                'description' => 'Full enterprise-grade infrastructure with dedicated support.',
+                'features' => ['Custom Features', 'Dedicated Support', 'High Performance Server'],
+                'is_popular' => false,
+                'is_active' => true,
+            ],
+        ];
 
-        Template::create([
-            'name' => 'Artisan Bakehouse',
-            'slug' => 'artisan-bakehouse',
-            'category' => 'UMKM',
-            'description' => 'Website landing page kafe & resto lengkap dengan buku menu digital dan pemesanan WhatsApp.',
-            'preview_image' => 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&auto=format&fit=crop&q=80',
-            'demo_url' => 'https://example.com/demo/cafe',
-            'setup_price' => 150000,
-            'is_active' => true,
-        ]);
+        foreach ($packages as $pkg) {
+            ServerPackage::updateOrCreate(['code' => $pkg['code']], $pkg);
+        }
 
-        Template::create([
-            'name' => 'Academia Plus',
-            'slug' => 'academia-plus',
-            'category' => 'School',
-            'description' => 'Sistem portal sekolah modern dengan info kurikulum, kegiatan akademik, dan pengumuman.',
-            'preview_image' => 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&auto=format&fit=crop&q=80',
-            'demo_url' => 'https://example.com/demo/school',
-            'setup_price' => 200000,
-            'is_active' => true,
-        ]);
+        // 2. Data Template Menggunakan preview_image sesuai migrasi asli
+        $templates = [
+            [
+                'name' => 'Nexus Corporate',
+                'slug' => 'nexus-corporate',
+                'category' => 'Company',
+                'description' => 'Professional corporate website template.',
+                'preview_image' => 'tech1.png',
+                'demo_url' => '#',
+                'setup_price' => 0,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Artisan Bakehouse',
+                'slug' => 'artisan-bakehouse',
+                'category' => 'UMKM',
+                'description' => 'Warm and cozy website for culinary business.',
+                'preview_image' => 'tech2.png',
+                'demo_url' => '#',
+                'setup_price' => 0,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Academia Plus',
+                'slug' => 'academia-plus',
+                'category' => 'School',
+                'description' => 'Modern institutional design for schools and courses.',
+                'preview_image' => 'tech3.png',
+                'demo_url' => '#',
+                'setup_price' => 0,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Civic Connect',
+                'slug' => 'civic-connect',
+                'category' => 'Government',
+                'description' => 'Clean and structured layout for public services.',
+                'preview_image' => 'tech4.png',
+                'demo_url' => '#',
+                'setup_price' => 0,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Elite Counsel',
+                'slug' => 'elite-counsel',
+                'category' => 'Company',
+                'description' => 'Formal template for law firms and consulting.',
+                'preview_image' => 'tech5.png',
+                'demo_url' => '#',
+                'setup_price' => 0,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Studio Prisma',
+                'slug' => 'studio-prisma',
+                'category' => 'Creative',
+                'description' => 'Vibrant portfolio template for creative agencies.',
+                'preview_image' => 'tech2.png',
+                'demo_url' => '#',
+                'setup_price' => 0,
+                'is_active' => true,
+            ],
+        ];
 
-        ServerPackage::create([
-            'name' => 'Paket S',
-            'cpu' => '1 vCPU',
-            'ram' => '1 GB RAM',
-            'storage' => '20 GB NVMe SSD',
-            'bandwidth' => '1 TB Bandwidth',
-            'price_per_month' => 45000,
-            'is_active' => true,
-        ]);
-
-        ServerPackage::create([
-            'name' => 'Paket M',
-            'cpu' => '2 vCPU',
-            'ram' => '2 GB RAM',
-            'storage' => '40 GB NVMe SSD',
-            'bandwidth' => '2 TB Bandwidth',
-            'price_per_month' => 85000,
-            'is_active' => true,
-        ]);
+        foreach ($templates as $tmpl) {
+            Template::updateOrCreate(['slug' => $tmpl['slug']], $tmpl);
+        }
     }
 }
