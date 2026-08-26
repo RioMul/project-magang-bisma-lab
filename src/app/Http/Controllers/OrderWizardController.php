@@ -11,16 +11,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class OrderWizardController extends Controller
-
-//template
-
 {
-    public function template(Request $request)
-    {
-        return $this->selectTemplate($request);
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | TEMPLATE
+    |--------------------------------------------------------------------------
+    */
 
-    public function selectTemplate(Request $request)
+    public function template(Request $request)
     {
         $selectedCategory = $request->query('category', 'All');
         $search = $request->query('search');
@@ -32,7 +30,11 @@ class OrderWizardController extends Controller
         }
 
         if (!empty($search)) {
-            $query->where('name', 'like', '%' . $search . '%');
+            $query->where(
+                'name',
+                'like',
+                '%' . $search . '%'
+            );
         }
 
         $templates = $query->get();
@@ -67,12 +69,16 @@ class OrderWizardController extends Controller
             ->route('order.domain');
     }
 
-//DOMAIN
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOMAIN
+    |--------------------------------------------------------------------------
+    */
 
     public function searchDomain(Request $request)
     {
         if (!session('order.template_id')) {
-
             return redirect()
                 ->route('order.template')
                 ->with(
@@ -81,7 +87,7 @@ class OrderWizardController extends Controller
                 );
         }
 
-        $selectedTemplate = Template::find(
+        $selectedTemplate = Template::findOrFail(
             session('order.template_id')
         );
 
@@ -89,8 +95,7 @@ class OrderWizardController extends Controller
 
         $domainResults = [];
 
-        if ($searchQuery) {
-
+        if (!empty($searchQuery)) {
             $cleanName = preg_replace(
                 '/[^a-zA-Z0-9-]/',
                 '',
@@ -126,16 +131,10 @@ class OrderWizardController extends Controller
             ];
 
             foreach ($extensions as $extension) {
-
                 $domainResults[] = [
-                    'domain' =>
-                        $cleanName . $extension['ext'],
-
-                    'price' =>
-                        $extension['price'],
-
-                    'available' =>
-                        $extension['available'],
+                    'domain' => $cleanName . $extension['ext'],
+                    'price' => $extension['price'],
+                    'available' => $extension['available'],
                 ];
             }
         }
@@ -158,23 +157,24 @@ class OrderWizardController extends Controller
         ]);
 
         session([
-            'order.domain' =>
-                $validated['selected_domain'],
-
-            'order.domain_price' =>
-                $validated['domain_price'],
+            'order.domain' => $validated['selected_domain'],
+            'order.domain_price' => $validated['domain_price'],
         ]);
 
         return redirect()
             ->route('order.package');
     }
 
-//Package
+
+    /*
+    |--------------------------------------------------------------------------
+    | PACKAGE
+    |--------------------------------------------------------------------------
+    */
 
     public function selectPackage()
     {
         if (!session('order.template_id')) {
-
             return redirect()
                 ->route('order.template')
                 ->with(
@@ -184,7 +184,6 @@ class OrderWizardController extends Controller
         }
 
         if (!session('order.domain')) {
-
             return redirect()
                 ->route('order.domain')
                 ->with(
@@ -198,7 +197,7 @@ class OrderWizardController extends Controller
             true
         )->get();
 
-        $selectedTemplate = Template::find(
+        $selectedTemplate = Template::findOrFail(
             session('order.template_id')
         );
 
@@ -228,16 +227,19 @@ class OrderWizardController extends Controller
         ]);
 
         session([
-            'order.package_id' =>
-                $validated['package_id'],
+            'order.package_id' => $validated['package_id'],
         ]);
 
         return redirect()
             ->route('order.checkout');
     }
 
-//CHECKOUT
-  
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHECKOUT
+    |--------------------------------------------------------------------------
+    */
 
     public function checkout()
     {
@@ -246,7 +248,6 @@ class OrderWizardController extends Controller
             !session('order.domain') ||
             !session('order.package_id')
         ) {
-
             return redirect()
                 ->route('order.template')
                 ->with(
@@ -268,7 +269,8 @@ class OrderWizardController extends Controller
         );
 
         $domainPrice = session(
-            'order.domain_price'
+            'order.domain_price',
+            0
         );
 
         $totalAmount =
@@ -287,7 +289,12 @@ class OrderWizardController extends Controller
         );
     }
 
-//PROSES CHECKOUT
+
+    /*
+    |--------------------------------------------------------------------------
+    | PROCESS CHECKOUT
+    |--------------------------------------------------------------------------
+    */
 
     public function processCheckout(Request $request)
     {
@@ -303,73 +310,100 @@ class OrderWizardController extends Controller
                 $validated['payment_method'],
         ]);
 
+        /*
+         * Belum login:
+         * arahkan ke Check Register.
+         */
         if (!Auth::check()) {
-
             return redirect()
                 ->route('order.check_register');
         }
 
+        /*
+         * Sudah login:
+         * langsung buat order.
+         */
         return $this->finalizeOrder();
     }
 
-//CHECK REGISTER
 
-   public function checkRegister()
-{
-    if (Auth::check()) {
-        return redirect()->route('order.checkout');
+    /*
+    |--------------------------------------------------------------------------
+    | CHECK REGISTER
+    |--------------------------------------------------------------------------
+    */
+
+    public function checkRegister()
+    {
+        /*
+         * Jika sudah login, tidak perlu
+         * masuk halaman login/register lagi.
+         */
+        if (Auth::check()) {
+            return redirect()
+                ->route('order.checkout');
+        }
+
+        if (
+            !session('order.template_id') ||
+            !session('order.domain') ||
+            !session('order.package_id')
+        ) {
+            return redirect()
+                ->route('order.template')
+                ->with(
+                    'error',
+                    'Sesi pesanan belum lengkap.'
+                );
+        }
+
+        $template = Template::findOrFail(
+            session('order.template_id')
+        );
+
+        $package = ServerPackage::findOrFail(
+            session('order.package_id')
+        );
+
+        $domain = session(
+            'order.domain'
+        );
+
+        $domainPrice = session(
+            'order.domain_price',
+            0
+        );
+
+        $totalAmount =
+            $package->price +
+            $domainPrice;
+
+        return view(
+            'order.check_register',
+            compact(
+                'template',
+                'package',
+                'domain',
+                'domainPrice',
+                'totalAmount'
+            )
+        );
     }
 
-    if (
-        !session('order.template_id') ||
-        !session('order.domain') ||
-        !session('order.package_id')
-    ) {
-        return redirect()
-            ->route('order.template')
-            ->with(
-                'error',
-                'Sesi pesanan belum lengkap.'
-            );
-    }
 
-    $template = Template::findOrFail(
-        session('order.template_id')
-    );
-
-    $package = ServerPackage::findOrFail(
-        session('order.package_id')
-    );
-
-    $domain = session('order.domain');
-
-    $domainPrice = session(
-        'order.domain_price',
-        150000
-    );
-
-    return view(
-        'order.check_register',
-        compact(
-            'template',
-            'package',
-            'domain',
-            'domainPrice'
-        )
-    );
-}
-
-//LOGIN DARI CHECK REGISTER
-
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIN DARI CHECK REGISTER
+    |--------------------------------------------------------------------------
+    */
 
     public function processCheckLogin(Request $request)
     {
-        $validated = $request->validate([
+        $credentials = $request->validate([
             'email' => [
                 'required',
                 'email',
             ],
-
             'password' => [
                 'required',
             ],
@@ -377,11 +411,10 @@ class OrderWizardController extends Controller
 
         if (
             !Auth::attempt(
-                $validated,
+                $credentials,
                 $request->boolean('remember')
             )
         ) {
-
             return back()
                 ->withErrors([
                     'login_email' =>
@@ -402,7 +435,12 @@ class OrderWizardController extends Controller
             );
     }
 
-//REGISTER DARI CHECK REGISTER
+
+    /*
+    |--------------------------------------------------------------------------
+    | REGISTER DARI CHECK REGISTER
+    |--------------------------------------------------------------------------
+    */
 
     public function processCheckRegister(Request $request)
     {
@@ -412,32 +450,25 @@ class OrderWizardController extends Controller
                 'string',
                 'max:255',
             ],
-
             'email' => [
                 'required',
                 'email',
                 'max:255',
                 'unique:users,email',
             ],
-
             'password' => [
                 'required',
-                'confirmed',
                 'min:8',
+                'confirmed',
             ],
         ]);
 
         $user = User::create([
-            'name' =>
-                $validated['name'],
-
-            'email' =>
-                $validated['email'],
-
-            'password' =>
-                Hash::make(
-                    $validated['password']
-                ),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make(
+                $validated['password']
+            ),
         ]);
 
         Auth::login($user);
@@ -454,7 +485,12 @@ class OrderWizardController extends Controller
             );
     }
 
-    //FINALISASI ORDER
+
+    /*
+    |--------------------------------------------------------------------------
+    | FINALIZE ORDER
+    |--------------------------------------------------------------------------
+    */
 
     private function finalizeOrder()
     {
@@ -471,21 +507,21 @@ class OrderWizardController extends Controller
         );
 
         $domainPrice = session(
-            'order.domain_price'
+            'order.domain_price',
+            0
         );
 
         $paymentMethod = session(
             'order.payment_method'
         );
 
-
         if (
             !$templateId ||
             !$packageId ||
             !$domain ||
-            !$paymentMethod
+            !$paymentMethod ||
+            !Auth::check()
         ) {
-
             return redirect()
                 ->route('order.checkout')
                 ->with(
@@ -493,7 +529,6 @@ class OrderWizardController extends Controller
                     'Data pesanan belum lengkap.'
                 );
         }
-
 
         $template = Template::findOrFail(
             $templateId
@@ -503,14 +538,11 @@ class OrderWizardController extends Controller
             $packageId
         );
 
-
         $totalAmount =
             $package->price +
             $domainPrice;
 
-
         $order = Order::create([
-
             'order_number' =>
                 $this->generateOrderNumber(),
 
@@ -548,6 +580,9 @@ class OrderWizardController extends Controller
                 null,
         ]);
 
+        /*
+         * Hapus session wizard setelah order berhasil dibuat.
+         */
         session()->forget([
             'order.template_id',
             'order.domain',
@@ -555,7 +590,6 @@ class OrderWizardController extends Controller
             'order.package_id',
             'order.payment_method',
         ]);
-
 
         return redirect()
             ->route(
@@ -568,7 +602,12 @@ class OrderWizardController extends Controller
             );
     }
 
-    //INVOICE
+
+    /*
+    |--------------------------------------------------------------------------
+    | INVOICE
+    |--------------------------------------------------------------------------
+    */
 
     public function invoice(Order $order)
     {
@@ -587,12 +626,16 @@ class OrderWizardController extends Controller
         );
     }
 
-//GENERATE ORDER NUMBER
+
+    /*
+    |--------------------------------------------------------------------------
+    | GENERATE ORDER NUMBER
+    |--------------------------------------------------------------------------
+    */
 
     private function generateOrderNumber(): string
     {
         do {
-
             $orderNumber =
                 'BISMA-' .
                 now()->format('Ymd') .
