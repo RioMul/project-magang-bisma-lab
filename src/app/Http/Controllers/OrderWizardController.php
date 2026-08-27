@@ -66,9 +66,12 @@ class OrderWizardController extends Controller
         ]);
 
         return redirect()
-            ->route('order.domain');
+            ->route('order.domain')
+            ->with(
+                'success',
+                'Template berhasil dipilih. Sekarang Anda dapat memilih domain atau melihat paket harga.'
+            );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -78,21 +81,15 @@ class OrderWizardController extends Controller
 
     public function searchDomain(Request $request)
     {
-        if (!session('order.template_id')) {
-            return redirect()
-                ->route('order.template')
-                ->with(
-                    'error',
-                    'Silakan pilih template terlebih dahulu.'
-                );
+        $selectedTemplate = null;
+
+        if (session('order.template_id')) {
+            $selectedTemplate = Template::find(
+                session('order.template_id')
+            );
         }
 
-        $selectedTemplate = Template::findOrFail(
-            session('order.template_id')
-        );
-
         $searchQuery = $request->query('q');
-
         $domainResults = [];
 
         if (!empty($searchQuery)) {
@@ -151,6 +148,15 @@ class OrderWizardController extends Controller
 
     public function storeDomain(Request $request)
     {
+        if (!session('order.template_id')) {
+            return redirect()
+                ->route('order.domain')
+                ->with(
+                    'error',
+                    'Silakan pilih template terlebih dahulu sebelum memilih domain.'
+                );
+        }
+
         $validated = $request->validate([
             'selected_domain' => 'required|string',
             'domain_price' => 'required|numeric',
@@ -162,9 +168,12 @@ class OrderWizardController extends Controller
         ]);
 
         return redirect()
-            ->route('order.package');
+            ->route('order.package')
+            ->with(
+                'success',
+                'Domain berhasil dipilih. Anda sekarang dapat memilih paket.'
+            );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -174,32 +183,18 @@ class OrderWizardController extends Controller
 
     public function selectPackage()
     {
-        if (!session('order.template_id')) {
-            return redirect()
-                ->route('order.template')
-                ->with(
-                    'error',
-                    'Silakan pilih template terlebih dahulu.'
-                );
-        }
-
-        if (!session('order.domain')) {
-            return redirect()
-                ->route('order.domain')
-                ->with(
-                    'error',
-                    'Silakan pilih domain terlebih dahulu.'
-                );
-        }
-
         $packages = ServerPackage::where(
             'is_active',
             true
         )->get();
 
-        $selectedTemplate = Template::findOrFail(
-            session('order.template_id')
-        );
+        $selectedTemplate = null;
+
+        if (session('order.template_id')) {
+            $selectedTemplate = Template::find(
+                session('order.template_id')
+            );
+        }
 
         $selectedPackageId = session(
             'order.package_id'
@@ -222,6 +217,15 @@ class OrderWizardController extends Controller
 
     public function storePackage(Request $request)
     {
+        if (!session('order.template_id')) {
+            return redirect()
+                ->route('order.package')
+                ->with(
+                    'error',
+                    'Silakan pilih template terlebih dahulu sebelum memilih paket.'
+                );
+        }
+
         $validated = $request->validate([
             'package_id' => 'required|exists:server_packages,id',
         ]);
@@ -230,10 +234,18 @@ class OrderWizardController extends Controller
             'order.package_id' => $validated['package_id'],
         ]);
 
+        if (!session('order.domain')) {
+            return redirect()
+                ->route('order.domain')
+                ->with(
+                    'success',
+                    'Paket berhasil dipilih. Sekarang silakan pilih domain.'
+                );
+        }
+
         return redirect()
             ->route('order.checkout');
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -243,16 +255,15 @@ class OrderWizardController extends Controller
 
     public function checkout()
     {
-        if (
-            !session('order.template_id') ||
-            !session('order.domain') ||
-            !session('order.package_id')
-        ) {
+        $missingSteps = $this->getMissingSteps();
+
+        if (!empty($missingSteps)) {
             return redirect()
                 ->route('order.template')
                 ->with(
                     'error',
-                    'Sesi pesanan belum lengkap.'
+                    'Pesanan belum lengkap. Silakan pilih: ' .
+                    implode(', ', $missingSteps) . '.'
                 );
         }
 
@@ -289,7 +300,6 @@ class OrderWizardController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | PROCESS CHECKOUT
@@ -298,6 +308,18 @@ class OrderWizardController extends Controller
 
     public function processCheckout(Request $request)
     {
+        $missingSteps = $this->getMissingSteps();
+
+        if (!empty($missingSteps)) {
+            return redirect()
+                ->route('order.template')
+                ->with(
+                    'error',
+                    'Pesanan belum lengkap. Silakan pilih: ' .
+                    implode(', ', $missingSteps) . '.'
+                );
+        }
+
         $validated = $request->validate([
             'payment_method' => [
                 'required',
@@ -310,22 +332,13 @@ class OrderWizardController extends Controller
                 $validated['payment_method'],
         ]);
 
-        /*
-         * Belum login:
-         * arahkan ke Check Register.
-         */
         if (!Auth::check()) {
             return redirect()
                 ->route('order.check_register');
         }
 
-        /*
-         * Sudah login:
-         * langsung buat order.
-         */
         return $this->finalizeOrder();
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -335,20 +348,14 @@ class OrderWizardController extends Controller
 
     public function checkRegister()
     {
-        /*
-         * Jika sudah login, tidak perlu
-         * masuk halaman login/register lagi.
-         */
         if (Auth::check()) {
             return redirect()
                 ->route('order.checkout');
         }
 
-        if (
-            !session('order.template_id') ||
-            !session('order.domain') ||
-            !session('order.package_id')
-        ) {
+        $missingSteps = $this->getMissingSteps();
+
+        if (!empty($missingSteps)) {
             return redirect()
                 ->route('order.template')
                 ->with(
@@ -390,7 +397,6 @@ class OrderWizardController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | LOGIN DARI CHECK REGISTER
@@ -423,9 +429,7 @@ class OrderWizardController extends Controller
                 ->withInput();
         }
 
-        $request
-            ->session()
-            ->regenerate();
+        $request->session()->regenerate();
 
         return redirect()
             ->route('order.checkout')
@@ -434,7 +438,6 @@ class OrderWizardController extends Controller
                 'Berhasil masuk. Silakan lanjutkan pembayaran.'
             );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -473,9 +476,7 @@ class OrderWizardController extends Controller
 
         Auth::login($user);
 
-        $request
-            ->session()
-            ->regenerate();
+        $request->session()->regenerate();
 
         return redirect()
             ->route('order.checkout')
@@ -485,6 +486,30 @@ class OrderWizardController extends Controller
             );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | CEK DATA WIZARD
+    |--------------------------------------------------------------------------
+    */
+
+    private function getMissingSteps(): array
+    {
+        $missingSteps = [];
+
+        if (!session('order.template_id')) {
+            $missingSteps[] = 'Template';
+        }
+
+        if (!session('order.domain')) {
+            $missingSteps[] = 'Domain';
+        }
+
+        if (!session('order.package_id')) {
+            $missingSteps[] = 'Paket';
+        }
+
+        return $missingSteps;
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -580,9 +605,6 @@ class OrderWizardController extends Controller
                 null,
         ]);
 
-        /*
-         * Hapus session wizard setelah order berhasil dibuat.
-         */
         session()->forget([
             'order.template_id',
             'order.domain',
@@ -601,7 +623,6 @@ class OrderWizardController extends Controller
                 'Pembayaran berhasil!'
             );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -625,7 +646,6 @@ class OrderWizardController extends Controller
             compact('order')
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------

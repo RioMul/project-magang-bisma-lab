@@ -3,47 +3,27 @@
 <html lang="id" class="scroll-smooth">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Website Profesional untuk UMKM — Langsung Jadi! | BismaLabs</title>
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
 </head>
-
 <body class="bg-white text-slate-800 antialiased selection:bg-[#0396c7] selection:text-white">
 
     {{-- NAVBAR --}}
     @include('partials.navbar')
 
-
-    {{-- ============================================================
-        1. HERO SECTION
-    ============================================================ --}}
-
     <section class="max-w-7xl mx-auto px-6 sm:px-10 pt-40 pb-24">
-
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-
-            {{-- KIRI --}}
             <div class="lg:col-span-7">
-
                 <div class="inline-block px-4 py-2 bg-slate-100 text-slate-700 rounded-full text-xs sm:text-sm font-extrabold uppercase tracking-wider mb-6">
 
                     TERPERCAYA OLEH 2,500+ UMKM
 
                 </div>
-
-
                 <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 leading-[1.15] tracking-tight">
-
                     Website <br>
-
                     Profesional <br>
-
                     untuk UMKM — <br>
 
                     <span class="text-[#0396c7]">
@@ -51,8 +31,6 @@
                     </span>
 
                 </h1>
-
-
                 <p class="mt-8 text-lg sm:text-xl text-slate-600 leading-relaxed max-w-xl font-medium">
 
                     Platform pembuatan website termudah untuk pengusaha kecil.
@@ -60,14 +38,11 @@
 
                 </p>
 
-
                 <div class="mt-10 flex flex-wrap items-center gap-5">
-
                     <a
                         href="{{ route('order.template') }}"
                         class="px-8 py-4 bg-[#0396c7] hover:bg-[#027ea7] text-white text-base sm:text-lg font-black rounded-2xl shadow-xl shadow-cyan-900/20 transition transform hover:-translate-y-0.5"
                     >
-
                         Buat Website Sekarang
 
                     </a>
@@ -563,25 +538,19 @@
 
                         </div>
 
-
                         <ul class="mt-8 space-y-4 text-sm sm:text-base text-slate-700 font-medium">
-
                             <li class="flex items-center gap-3">
-
                                 <span class="text-[#0396c7] font-bold text-lg">✓</span>
 
                                 Single Landing Page
 
                             </li>
-
                             <li class="flex items-center gap-3">
-
                                 <span class="text-[#0396c7] font-bold text-lg">✓</span>
 
                                 Domain .com
 
                             </li>
-
                             <li class="flex items-center gap-3 text-slate-400">
 
                                 <span>✕</span>
@@ -589,12 +558,8 @@
                                 E-Commerce Features
 
                             </li>
-
                         </ul>
-
                     </div>
-
-
                     <button
                         type="button"
                         onclick="triggerNeedTemplateModal()"
@@ -604,9 +569,7 @@
                         Pilih Paket
 
                     </button>
-
                 </div>
-
 
                 {{-- PROFESSIONAL --}}
                 <div class="bg-white border-2 border-[#0396c7] rounded-3xl p-8 flex flex-col justify-between shadow-2xl relative transform lg:-translate-y-3">
@@ -616,8 +579,6 @@
                         Paling Populer
 
                     </div>
-
-
                     <div>
 
                         <span class="text-xs font-bold text-[#0396c7] uppercase font-mono tracking-wider mt-1">
@@ -644,7 +605,6 @@
 
                         </div>
 
-
                         <ul class="mt-8 space-y-4 text-sm sm:text-base text-slate-700 font-medium">
 
                             <li class="flex items-center gap-3">
@@ -663,9 +623,7 @@
                             </li>
 
                         </ul>
-
                     </div>
-
 
                     <button
                         type="button"
@@ -674,101 +632,68 @@
                     >
 
                         Pilih Paket
-
                     </button>
-
                 </div>
-
 
                 {{-- BUSINESS --}}
                 <div class="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
-
                     <div>
-
                         <span class="text-xs font-bold text-[#0396c7] uppercase font-mono tracking-wider">
-
                             PAKET L
 
                         </span>
-
                         <h3 class="text-xl font-extrabold text-slate-900 mt-1">
-
                             Business
 
                         </h3>
-
                         <div class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 font-mono">
-
                             499k
 
                             <span class="text-sm font-normal text-slate-500 font-sans">
 
                                 /bln
-
                             </span>
-
                         </div>
-
-
                         <ul class="mt-8 space-y-4 text-sm sm:text-base text-slate-700 font-medium">
-
                             <li class="flex items-center gap-3">
                                 <span class="text-[#0396c7] font-bold text-lg">✓</span>
                                 E-Commerce Features
                             </li>
-
                             <li class="flex items-center gap-3">
                                 <span class="text-[#0396c7] font-bold text-lg">✓</span>
                                 Payment Integration
                             </li>
-
                             <li class="flex items-center gap-3">
                                 <span class="text-[#0396c7] font-bold text-lg">✓</span>
                                 Priority Support
                             </li>
-
                         </ul>
-
                     </div>
-
-
                     <button
                         type="button"
                         onclick="triggerNeedTemplateModal()"
                         class="w-full mt-8 py-3.5 text-sm font-bold border-2 border-[#0396c7] text-[#0396c7] hover:bg-cyan-50 rounded-xl transition"
                     >
-
                         Pilih Paket
-
                     </button>
-
                 </div>
-
 
                 {{-- ENTERPRISE --}}
                 <div class="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
-
                     <div>
-
                         <span class="text-xs font-bold text-slate-500 uppercase font-mono tracking-wider">
 
                             PAKET XL
-
                         </span>
-
                         <h3 class="text-xl font-extrabold text-slate-900 mt-1">
 
                             Enterprise
-
                         </h3>
-
                         <div class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 font-mono">
 
                             Custom
 
                         </div>
-
-
                         <ul class="mt-8 space-y-4 text-sm sm:text-base text-slate-700 font-medium">
 
                             <li class="flex items-center gap-3">
@@ -785,46 +710,24 @@
                                 <span class="text-[#0396c7] font-bold text-lg">✓</span>
                                 High Performance Server
                             </li>
-
                         </ul>
-
                     </div>
-
-
                     <a
                         href="https://wa.me/6281234567890?text=Halo%20BismaLabs,%20saya%20tertarik%20dengan%20Paket%20Enterprise"
                         target="_blank"
                         class="w-full mt-8 py-3.5 text-center text-sm font-bold border-2 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl transition inline-block"
-                    >
-
+                   >
                         Hubungi Kami
-
                     </a>
-
                 </div>
-
             </div>
-
         </div>
-
     </section>
 
-
-
-    {{-- ============================================================
-        5. 4 LANGKAH
-    ============================================================ --}}
-
     <section class="py-24 bg-[#f0f4f9] border-t border-slate-200">
-
         <div class="max-w-6xl mx-auto px-6 sm:px-10">
-
             <div class="text-center max-w-2xl mx-auto mb-20">
-
                 <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-
-                    4 Langkah Mudah Menuju Go–Digital
-
                 </h2>
 
                 <p class="text-base sm:text-lg text-slate-600 mt-4">
@@ -834,17 +737,12 @@
                 </p>
 
             </div>
-
-
             <div class="relative">
 
                 <div class="hidden md:block absolute top-7 left-16 right-16 border-t-2 border-dashed border-cyan-300 -z-0"></div>
-
-
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 relative z-10">
 
                     @php
-
                         $steps = [
                             [
                                 'number' => '1',
@@ -869,8 +767,6 @@
                         ];
 
                     @endphp
-
-
                     @foreach ($steps as $step)
                         <div class="flex flex-col items-center text-center">
                             <div class="w-14 h-14 rounded-full bg-[#0396c7] text-white flex items-center justify-center font-black text-base shadow-lg mb-5">
@@ -946,14 +842,8 @@
             </svg>
         </a>
     </div>
-
-    {{-- MODAL REMINDER --}}
     @include('partials.template_landing')
-
-    {{-- FOOTER --}}
     @include('partials.footer')
-
-
 </body>
 
 </html>
