@@ -7,88 +7,194 @@ use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| HOME / LANDING PAGE
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', [LandingController::class, 'index'])
     ->name('home');
 
-//ORDER WIZARD
 
-Route::prefix('order')->name('order.')->group(function () {
+/*
+|--------------------------------------------------------------------------
+| ORDER WIZARD
+|--------------------------------------------------------------------------
+*/
 
-//TEMPLATE
-    Route::get('/template', [OrderWizardController::class, 'template'])
-        ->name('template');
+Route::prefix('order')
+    ->name('order.')
+    ->group(function () {
 
-    Route::post('/template', [OrderWizardController::class, 'storeTemplate'])
-        ->name('template.store');
+        /*
+        |--------------------------------------------------------------------------
+        | TEMPLATE
+        |--------------------------------------------------------------------------
+        */
 
-//DOMAIN
-    Route::get('/domain', [OrderWizardController::class, 'searchDomain'])
-        ->name('domain');
+        Route::get(
+            '/template',
+            [OrderWizardController::class, 'template']
+        )->name('template');
 
-    Route::post('/domain', [OrderWizardController::class, 'storeDomain'])
-        ->name('domain.store');
-
-//PACKAGE
-    Route::get('/package', [OrderWizardController::class, 'selectPackage'])
-        ->name('package');
-
-    Route::post('/package', [OrderWizardController::class, 'storePackage'])
-        ->name('package.store');
-
-//CHECKOUT
-    Route::get('/checkout', [OrderWizardController::class, 'checkout'])
-        ->name('checkout');
-
-    Route::post('/checkout', [OrderWizardController::class, 'processCheckout'])
-        ->name('checkout.process');
+        Route::post(
+            '/template',
+            [OrderWizardController::class, 'storeTemplate']
+        )->name('template.store');
 
 
-//CHECK REGISTER
-    Route::get('/check-register', [OrderWizardController::class, 'checkRegister'])
-        ->name('check_register');
+        /*
+        |--------------------------------------------------------------------------
+        | DOMAIN
+        |--------------------------------------------------------------------------
+        */
 
-    Route::post('/check-register/login', [OrderWizardController::class, 'processCheckLogin'])
-        ->name('check_login.process');
+        Route::get(
+            '/domain',
+            [OrderWizardController::class, 'searchDomain']
+        )->name('domain');
 
-    Route::post('/check-register/register', [OrderWizardController::class, 'processCheckRegister'])
-        ->name('check_register.process');
+        Route::post(
+            '/domain',
+            [OrderWizardController::class, 'storeDomain']
+        )->name('domain.store');
 
 
-// INVOICE
-    Route::get('/invoice/{order:order_number}', [OrderWizardController::class, 'invoice'])
-        ->middleware('auth')
-        ->name('invoice');
+        /*
+        |--------------------------------------------------------------------------
+        | PACKAGE
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/package',
+            [OrderWizardController::class, 'selectPackage']
+        )->name('package');
+
+        Route::post(
+            '/package',
+            [OrderWizardController::class, 'storePackage']
+        )->name('package.store');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CHECKOUT
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/checkout',
+            [OrderWizardController::class, 'checkout']
+        )->name('checkout');
+
+        Route::post(
+            '/checkout',
+            [OrderWizardController::class, 'processCheckout']
+        )->name('checkout.process');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CHECK REGISTER
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/check-register',
+            [OrderWizardController::class, 'checkRegister']
+        )->name('check_register');
+
+        Route::post(
+            '/check-register/login',
+            [OrderWizardController::class, 'processCheckLogin']
+        )->name('check_login.process');
+
+        Route::post(
+            '/check-register/register',
+            [OrderWizardController::class, 'processCheckRegister']
+        )->name('check_register.process');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | INVOICE
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/invoice/{order:order_number}',
+            [OrderWizardController::class, 'invoice']
+        )
+            ->middleware('auth')
+            ->name('invoice');
+    });
+
+
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'verified'
+])->group(function () {
+
+    Route::get('/dashboard', function () {
+
+        $orders = Order::where(
+            'user_id',
+            Auth::id()
+        )
+            ->with([
+                'template',
+                'serverPackage'
+            ])
+            ->latest()
+            ->get();
+
+        return view(
+            'dashboard',
+            compact('orders')
+        );
+
+    })->name('dashboard');
 });
 
- //DASHBOARD
-Route::get('/dashboard', function () {
 
-    $orders = Order::where('user_id', Auth::id())
-        ->with([
-            'template',
-            'serverPackage'
-        ])
-        ->latest()
-        ->get();
+/*
+|--------------------------------------------------------------------------
+| PROFILE
+|--------------------------------------------------------------------------
+*/
 
-    return view('dashboard', compact('orders'));
+Route::middleware('auth')
+    ->group(function () {
 
-})->middleware(['auth', 'verified'])
-    ->name('dashboard');
+        Route::get(
+            '/profile',
+            [ProfileController::class, 'edit']
+        )->name('profile.edit');
 
- //PROFILE
+        Route::patch(
+            '/profile',
+            [ProfileController::class, 'update']
+        )->name('profile.update');
 
-Route::middleware('auth')->group(function () {
+        Route::delete(
+            '/profile',
+            [ProfileController::class, 'destroy']
+        )->name('profile.destroy');
+    });
 
-    Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
 
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
-
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
-});
-
+/*
+|--------------------------------------------------------------------------
+| AUTH ROUTES
+|--------------------------------------------------------------------------
+*/
 
 require __DIR__ . '/auth.php';
