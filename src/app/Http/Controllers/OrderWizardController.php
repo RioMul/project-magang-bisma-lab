@@ -14,7 +14,6 @@ use Illuminate\Support\Str;
 
 class OrderWizardController extends Controller
 {
-    // --- 1. TEMPLATE ---
     public function template(Request $request)
     {
         $selectedCategory = $request->query('category', 'All');
@@ -45,10 +44,9 @@ class OrderWizardController extends Controller
 
         session(['order.template_id' => $validated['template_id']]);
 
-        return redirect()->route('order.domain')->with('success', 'Template berhasil dipilih. Sekarang Anda dapat memilih domain.');
+        return redirect()->route('order.domain');
     }
 
-    // --- 2. DOMAIN ---
     public function searchDomain(Request $request)
     {
         $selectedTemplate = session('order.template_id') ? Template::with('images')->find(session('order.template_id')) : null;
@@ -57,17 +55,18 @@ class OrderWizardController extends Controller
 
         if (!empty($searchQuery)) {
             $cleanName = preg_replace('/[^a-zA-Z0-9-]/', '', strtolower($searchQuery));
-            
             $extensions = [
-                ['ext' => '.com', 'price' => 150000, 'available' => true],
-                ['ext' => '.id', 'price' => 225000, 'available' => true],
+                ['ext' => '.com', 'price' => 150000, 'popular' => true],
+                ['ext' => '.id', 'price' => 225000, 'popular' => false],
+                ['ext' => '.net', 'price' => 140000, 'popular' => false],
             ];
 
             foreach ($extensions as $extension) {
                 $domainResults[] = [
                     'domain' => $cleanName . $extension['ext'],
                     'price' => $extension['price'],
-                    'available' => $extension['available'],
+                    'ext' => $extension['ext'],
+                    'popular' => $extension['popular']
                 ];
             }
         }
@@ -91,10 +90,9 @@ class OrderWizardController extends Controller
             'order.domain_price' => $validated['domain_price'],
         ]);
 
-        return redirect()->route('order.package')->with('success', 'Domain berhasil dipilih. Anda sekarang dapat memilih paket.');
+        return redirect()->route('order.package');
     }
 
-    // --- 3. PACKAGE ---
     public function selectPackage()
     {
         $packages = Package::with('features')->where('is_active', true)->get();
@@ -107,8 +105,8 @@ class OrderWizardController extends Controller
 
     public function storePackage(Request $request)
     {
-        if (!session('order.template_id')) {
-            return redirect()->route('order.package')->with('error', 'Silakan pilih template terlebih dahulu.');
+        if (!session('order.template_id') || !session('order.domain')) {
+            return redirect()->route('order.package')->with('error', 'Data sebelumnya belum lengkap.');
         }
 
         $validated = $request->validate([
@@ -117,14 +115,9 @@ class OrderWizardController extends Controller
 
         session(['order.package_id' => $validated['package_id']]);
 
-        if (!session('order.domain')) {
-            return redirect()->route('order.domain')->with('success', 'Paket berhasil dipilih. Sekarang silakan pilih domain.');
-        }
-
         return redirect()->route('order.checkout');
     }
 
-    // --- 4. CHECKOUT (ALUR CERDAS) ---
     private function getMissingSteps(): array
     {
         $missingSteps = [];
@@ -138,19 +131,27 @@ class OrderWizardController extends Controller
     {
         $missingSteps = $this->getMissingSteps();
         if (!empty($missingSteps)) {
-            return redirect()->route('order.template')->with('error', 'Pesanan belum lengkap. Silakan pilih: ' . implode(', ', $missingSteps) . '.');
+            // Mencegah bug saat user klik "Back" setelah sukses bayar
+            if (Auth::check()) {
+                return redirect()->route('dashboard'); // Arahkan ke dashboard jika sudah login
+            }
+            return redirect()->route('order.template'); // Ulangi dari awal jika guest
         }
 
         $template = Template::with('images')->findOrFail(session('order.template_id'));
         $package = Package::findOrFail(session('order.package_id'));
         $domain = session('order.domain');
         $domainPrice = session('order.domain_price', 0);
-        $totalAmount = $package->price_annually + $domainPrice;
+        $totalAmount = $package->price_monthly + $domainPrice;
 
-        return view('order.checkout', compact('template', 'package', 'domain', 'domainPrice', 'totalAmount'));
+        // Memaksa browser TIDAK MENYIMPAN halaman ini di memori Cache (Anti Back-Button Bug)
+        return response()
+            ->view('order.checkout', compact('template', 'package', 'domain', 'domainPrice', 'totalAmount'))
+            ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
     }
 
-    // Aksi Menyimpan Metode Pembayaran
     public function savePaymentMethod(Request $request)
     {
         $validated = $request->validate([
@@ -161,14 +162,12 @@ class OrderWizardController extends Controller
         return redirect()->route('order.checkout');
     }
 
-    // Aksi Kembali Memilih Pembayaran (Reset)
     public function resetPaymentMethod()
     {
         session()->forget('order.payment_method');
         return redirect()->route('order.checkout');
     }
 
-    // Aksi Auth Login
     public function processCheckLogin(Request $request)
     {
         $credentials = $request->validate([
@@ -177,16 +176,13 @@ class OrderWizardController extends Controller
         ]);
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors([
-                'login_email' => 'Email atau password salah.'
-            ])->withInput();
+            return back()->withErrors(['login_email' => 'Email atau password salah.'])->withInput();
         }
 
         $request->session()->regenerate();
-        return redirect()->route('order.checkout')->with('success', 'Berhasil masuk. Silakan konfirmasi pesanan Anda.');
+        return redirect()->route('order.checkout');
     }
 
-    // Aksi Auth Register
     public function processCheckRegister(Request $request)
     {
         $validated = $request->validate([
@@ -204,23 +200,22 @@ class OrderWizardController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('order.checkout')->with('success', 'Akun berhasil dibuat. Silakan konfirmasi pesanan Anda.');
+        return redirect()->route('order.checkout');
     }
 
-    // Aksi Finalisasi Pemesanan
     public function finalizeOrder()
     {
+        // Mencegah Form Resubmission (Jika user me-refresh paksa setelah bayar)
         if (!empty($this->getMissingSteps()) || !session('order.payment_method') || !Auth::check()) {
-            return redirect()->route('order.checkout')->with('error', 'Data pesanan belum lengkap atau Anda belum login.');
+            return redirect()->route('dashboard')->with('error', 'Sesi pembayaran telah kedaluwarsa atau pesanan sudah diproses.');
         }
 
         $template = Template::findOrFail(session('order.template_id'));
         $package = Package::findOrFail(session('order.package_id'));
-        $domainPrice = session('order.domain_price', 0);
-        $totalAmount = $package->price_annually + $domainPrice;
+        $totalAmount = $package->price_monthly + session('order.domain_price', 0);
 
         $order = Order::create([
-            'order_number' => $this->generateOrderNumber(),
+            'order_number' => 'BISMA-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6)),
             'user_id' => Auth::id(),
             'template_id' => $template->id,
             'package_id' => $package->id,
@@ -252,23 +247,14 @@ class OrderWizardController extends Controller
         return redirect()->route('order.invoice', $order->order_number)->with('payment_success', 'Pembayaran berhasil!');
     }
 
-    // --- 5. INVOICE ---
     public function invoice(Order $order)
     {
         if ($order->user_id !== Auth::id()) {
             abort(403);
         }
 
-        $order->load(['template.images', 'package']);
-        return view('order.invoice', compact('order'));
-    }
-
-    private function generateOrderNumber(): string
-    {
-        do {
-            $orderNumber = 'BISMA-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
-        } while (Order::where('order_number', $orderNumber)->exists());
+        $order->load(['template.type', 'template.images', 'package']);
         
-        return $orderNumber;
+        return view('order.invoice', compact('order'));
     }
 }

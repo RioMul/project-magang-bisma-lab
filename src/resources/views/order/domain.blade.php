@@ -1,317 +1,129 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-slate-50 py-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-[#f8fafc] py-12 pt-32">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        @if(session('error'))
-            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-xs font-bold rounded-r-xl shadow-sm">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        @if(session('success'))
-            <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 text-xs font-bold rounded-r-xl shadow-sm">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <div class="flex items-center justify-center mb-12">
+        {{-- STEPPER --}}
+        <div class="flex items-center justify-center mb-16">
             <div class="flex items-center space-x-3 sm:space-x-4">
-
-                <a href="{{ route('order.template') }}"
-                   class="flex items-center {{ session('order.template_id') ? 'text-emerald-600' : 'text-slate-400' }}">
-                    <span class="w-8 h-8 flex items-center justify-center rounded-full {{ session('order.template_id') ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500' }} text-xs font-bold">
-                        @if(session('order.template_id'))
-                            ✓
-                        @else
-                            1
-                        @endif
-                    </span>
-                    <span class="ml-2 text-xs font-semibold uppercase tracking-wider hidden sm:inline">
-                        Template
-                    </span>
+                <a href="{{ route('order.template') }}" class="flex items-center flex-col relative">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#057A55] text-white text-xs font-bold">✓</span>
+                    <span class="absolute top-10 text-[10px] font-bold uppercase text-[#057A55]">Template</span>
                 </a>
+                <div class="w-12 sm:w-20 h-[2px] bg-[#057A55] -mt-5"></div>
 
-                <div class="w-8 sm:w-12 h-0.5 bg-slate-200"></div>
-
-                <div class="flex items-center text-sky-900">
-                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-sky-900 text-white text-xs font-bold ring-4 ring-sky-100">
-                        2
-                    </span>
-                    <span class="ml-2 text-xs font-bold uppercase tracking-wider">
-                        Domain
-                    </span>
+                <div class="flex items-center flex-col relative">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#0369a1] text-white text-xs font-bold ring-4 ring-sky-100">2</span>
+                    <span class="absolute top-10 text-[10px] font-bold uppercase text-[#0369a1]">Domain</span>
                 </div>
+                <div class="w-12 sm:w-20 h-[2px] bg-slate-200 -mt-5"></div>
 
-                <div class="w-8 sm:w-12 h-0.5 bg-slate-200"></div>
-
-                <a href="{{ route('order.package') }}"
-                   class="flex items-center text-slate-400">
-                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 text-xs font-bold">
-                        {{ session('order.package_id') ? '✓' : '3' }}
-                    </span>
-                    <span class="ml-2 text-xs font-semibold uppercase tracking-wider hidden sm:inline">
-                        Paket
-                    </span>
-                </a>
-
-                <div class="w-8 sm:w-12 h-0.5 bg-slate-200"></div>
-
-                <div class="flex items-center text-slate-400">
-                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 text-xs font-bold">
-                        4
-                    </span>
-                    <span class="ml-2 text-xs font-semibold uppercase tracking-wider hidden sm:inline">
-                        Checkout
-                    </span>
+                <div class="flex items-center flex-col relative">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-400 text-xs font-bold">3</span>
+                    <span class="absolute top-10 text-[10px] font-bold uppercase text-slate-400">Paket</span>
                 </div>
+                <div class="w-12 sm:w-20 h-[2px] bg-slate-200 -mt-5"></div>
 
+                <div class="flex items-center flex-col relative">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-400 text-xs font-bold">4</span>
+                    <span class="absolute top-10 text-[10px] font-bold uppercase text-slate-400">Bayar</span>
+                </div>
             </div>
         </div>
 
-        <div class="text-center max-w-xl mx-auto mb-8">
-            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
-                Cek Ketersediaan
-                <span class="text-sky-900">Domain Anda</span>
+        <div class="text-center max-w-2xl mx-auto mb-10">
+            <h1 class="text-4xl font-extrabold text-slate-900 leading-tight">
+                Find the perfect name for your <br><span class="text-[#0369a1]">next big idea</span>
             </h1>
-
-            @if($selectedTemplate)
-                <p class="text-slate-500 text-sm mt-2">
-                    Template terpilih:
-                    <span class="font-bold text-slate-800">
-                        {{ $selectedTemplate->name }}
-                    </span>
-                </p>
-            @else
-                <p class="text-slate-500 text-sm mt-2">
-                    Anda bebas mencari dan melihat harga domain terlebih dahulu.
-                </p>
-            @endif
+            <p class="text-slate-500 text-sm mt-4">Secure your digital identity in seconds. Simple, transparent pricing with no hidden fees.</p>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6">
-
-            <form action="{{ route('order.domain') }}"
-                  method="GET"
-                  class="flex gap-3">
-
-                <div class="relative flex-1">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 font-bold text-sm">
-                        www.
-                    </span>
-
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ $searchQuery ?? '' }}"
-                        placeholder="contoh: tokombakhars"
-                        required
-                        class="w-full pl-14 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-sm focus:ring-sky-900 focus:border-sky-900 font-medium"
-                    >
-                </div>
-
-                <button type="submit"
-                        class="bg-sky-900 hover:bg-sky-800 text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-xl shadow-sm transition">
-                    Cek Domain
-                </button>
-
+        <div class="max-w-3xl mx-auto mb-6">
+            <form action="{{ route('order.domain') }}" method="GET" class="relative flex items-center shadow-sm rounded-xl bg-white border border-slate-200 overflow-hidden">
+                <span class="pl-5 text-slate-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" name="q" value="{{ $searchQuery }}" placeholder="namabisnis.com" class="w-full pl-3 pr-4 py-4 text-base border-none focus:ring-0">
+                <button type="submit" class="bg-[#0369a1] hover:bg-[#027ea8] text-white font-bold px-8 py-3 rounded-lg mr-1.5 transition">Search</button>
             </form>
+        </div>
 
-            @if(!empty($domainResults))
+        <div class="flex items-center justify-center gap-6 text-[11px] font-bold text-slate-500 mb-16">
+            <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-[#0369a1]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Instant Activation</span>
+            <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-[#0369a1]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg> Privacy Protection</span>
+            <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-[#0369a1]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg> 24/7 Support</span>
+        </div>
 
-                <div class="pt-4 border-t border-slate-100 space-y-3">
-
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">
-                        Hasil Pengecekan untuk "{{ $searchQuery }}"
-                    </h3>
-
-                    <form id="domainForm"
-                          action="{{ route('order.domain.store') }}"
-                          method="POST"
-                          class="space-y-3">
-
-                        @csrf
-
-                        @foreach($domainResults as $res)
-
-                            <label class="flex items-center justify-between p-4 rounded-xl border {{ $res['available'] ? 'border-slate-200 bg-white hover:border-sky-900 cursor-pointer' : 'border-red-100 bg-red-50/40 opacity-75' }} transition">
-
-                                <div class="flex items-center space-x-3">
-
-                                    @if($res['available'])
-
-                                        <input
-                                            type="radio"
-                                            name="selected_domain"
-                                            value="{{ $res['domain'] }}"
-                                            data-price="{{ $res['price'] }}"
-                                            class="domain-radio text-sky-900 focus:ring-sky-900"
-                                        >
-
-                                    @else
-
-                                        <span class="w-5 h-5 flex items-center justify-center rounded-full bg-red-100 text-red-600 text-xs font-bold">
-                                            ✕
-                                        </span>
-
-                                    @endif
-
-                                    <div>
-                                        <p class="font-bold text-slate-900 text-sm">
-                                            {{ $res['domain'] }}
-                                        </p>
-
-                                        <span class="text-xs {{ $res['available'] ? 'text-emerald-600 font-semibold' : 'text-red-500 font-medium' }}">
-                                            {{ $res['available'] ? 'Tersedia' : 'Sudah dimiliki orang lain / Tidak tersedia' }}
-                                        </span>
-                                    </div>
-
-                                </div>
-
-                                <div class="text-right">
-
-                                    @if($res['available'])
-
-                                        <span class="text-sm font-extrabold text-slate-900">
-                                            Rp {{ number_format($res['price'], 0, ',', '.') }}
-                                        </span>
-
-                                        <span class="text-[10px] text-slate-400 block">
-                                            /tahun
-                                        </span>
-
-                                    @else
-
-                                        <span class="text-xs font-bold text-red-400 uppercase tracking-wider">
-                                            Terpakai
-                                        </span>
-
-                                    @endif
-
-                                </div>
-
-                            </label>
-
-                        @endforeach
-
-                        <input
-                            type="hidden"
-                            name="domain_price"
-                            id="domain_price_input"
-                        >
-
-                        <div class="flex items-center justify-between pt-4">
-
-                            <a href="{{ route('order.template') }}"
-                               class="text-xs font-bold text-slate-500 hover:text-slate-800">
-                                ← Lihat Template
-                            </a>
-
-                            <button type="button"
-                                    id="selectDomainButton"
-                                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider px-8 py-3 rounded-xl shadow-sm transition">
-                                Pilih Domain →
-                            </button>
-
-                        </div>
-
-                    </form>
-
+        @if(count($domainResults) > 0)
+            <div class="max-w-3xl mx-auto mb-20">
+                <div class="flex justify-between items-end mb-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900">Available Extensions</h2>
+                        <p class="text-xs text-slate-500">Best matches for your search</p>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">SORTED BY POPULARITY</span>
                 </div>
 
-            @endif
-
-            <div class="pt-4 text-center">
-                <a href="{{ route('order.package') }}"
-                   class="text-xs font-bold text-sky-900 hover:underline">
-                    Atau lihat semua paket harga →
-                </a>
+                <div class="space-y-4">
+                    @foreach($domainResults as $result)
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition">
+                            <div class="flex items-center gap-5">
+                                <div class="w-16 h-12 rounded-lg {{ $result['popular'] ? 'bg-sky-50 text-[#0369a1]' : 'bg-slate-50 text-slate-500' }} flex items-center justify-center font-black text-lg border {{ $result['popular'] ? 'border-sky-100' : 'border-slate-200' }}">
+                                    {{ $result['ext'] }}
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-lg">{{ $result['domain'] }}</h3>
+                                    <p class="text-xs text-slate-500">
+                                        {{ $result['ext'] === '.com' ? 'The gold standard for business' : ($result['ext'] === '.id' ? 'Perfect for Indonesian brands' : 'Ideal for network & tech projects') }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-6">
+                                <div class="text-right">
+                                    <div class="font-black text-slate-900 text-lg">Rp {{ number_format($result['price'], 0, ',', '.') }}</div>
+                                    <div class="text-[10px] text-slate-400 uppercase font-bold">per year</div>
+                                </div>
+                                <form action="{{ route('order.domain.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="selected_domain" value="{{ $result['domain'] }}">
+                                    <input type="hidden" name="domain_price" value="{{ $result['price'] }}">
+                                    <button type="submit" class="px-6 py-2.5 rounded-lg font-bold text-sm transition bg-[#0369a1] hover:bg-[#027ea8] text-white shadow-sm">
+                                        Select
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-
-        </div>
-
-    </div>
-</div>
-
-<div id="domainWarningModal"
-     class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 px-4">
-
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-
-        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-amber-100 text-amber-600 text-xl mb-4">
-            !
-        </div>
-
-        <h3 class="text-lg font-extrabold text-slate-900">
-            Pilih Template Terlebih Dahulu
-        </h3>
-
-        <p class="text-sm text-slate-500 mt-2 leading-relaxed">
-            Anda tetap dapat melihat harga dan mencari domain, tetapi untuk melanjutkan pesanan Anda harus memilih template terlebih dahulu.
-        </p>
-
-        <div class="flex gap-3 mt-6">
-
-            <button type="button"
-                    id="closeDomainWarning"
-                    class="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-600 py-3 rounded-xl text-xs font-bold">
-                Lanjut Browsing
-            </button>
-
-            <a href="{{ route('order.template') }}"
-               class="flex-1 bg-sky-900 hover:bg-sky-800 text-white text-center py-3 rounded-xl text-xs font-bold">
-                Pilih Template
-            </a>
-
-        </div>
-
-    </div>
-</div>
-
-<script>
-document.querySelectorAll('.domain-radio').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-        document.getElementById('domain_price_input').value =
-            this.dataset.price;
-    });
-});
-
-const selectDomainButton =
-    document.getElementById('selectDomainButton');
-
-const domainWarningModal =
-    document.getElementById('domainWarningModal');
-
-const closeDomainWarning =
-    document.getElementById('closeDomainWarning');
-
-if (selectDomainButton) {
-    selectDomainButton.addEventListener('click', function() {
-        const selectedDomain =
-            document.querySelector(
-                'input[name="selected_domain"]:checked'
-            );
-
-        if (!selectedDomain) {
-            alert('Silakan pilih domain terlebih dahulu.');
-            return;
-        }
-
-        @if(session('order.template_id'))
-            document.getElementById('domainForm').submit();
-        @else
-            domainWarningModal.classList.remove('hidden');
-            domainWarningModal.classList.add('flex');
         @endif
-    });
-}
 
-if (closeDomainWarning) {
-    closeDomainWarning.addEventListener('click', function() {
-        domainWarningModal.classList.add('hidden');
-        domainWarningModal.classList.remove('flex');
-    });
-}
-</script>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto border-t border-slate-200 pt-16 pb-10">
+            <div class="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                <div class="w-12 h-12 bg-sky-50 text-[#0369a1] rounded-xl flex items-center justify-center mb-6">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Domain Privacy</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">Protect your personal info from spammers and scammers with built-in WHOIS privacy protection.</p>
+            </div>
+            <div class="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-6">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Easy Setup</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">Connect your domain to your Bisma Labs project with a single click. No DNS headaches.</p>
+            </div>
+            <div class="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mb-6">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Auto-Renewal</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">Never lose your brand. We'll handle renewals automatically so you can focus on growing.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
 @endsection
