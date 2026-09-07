@@ -4,6 +4,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\OrderWizardController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Order;
+use App\Http\Controllers\Client\DashboardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -38,16 +39,22 @@ Route::prefix('order')->name('order.')->group(function () {
     Route::get('/invoice/{order:order_number}', [OrderWizardController::class, 'invoice'])->middleware('auth')->name('invoice');
 });
 
-// Dashboard Client Area
+//Dashboard Client Area Percobaan
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        $orders = Order::where('user_id', Auth::id())
-            ->with(['template', 'package', 'website'])
-            ->latest()
-            ->get();
-        return view('dashboard', compact('orders'));
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
 });
+
+// Dashboard Client Area
+//Route::middleware(['auth', 'verified'])->group(function () {
+    //Route::get('/dashboard', function () {
+        //$orders = Order::where('user_id', Auth::id())
+            //->with(['template', 'package', 'website'])
+           // ->latest()
+           // ->get();
+      //  return view('dashboard', compact('orders'));
+   // })->name('dashboard');
+//});
 
 // Profile
 Route::middleware('auth')->group(function () {
