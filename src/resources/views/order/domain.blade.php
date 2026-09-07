@@ -67,29 +67,32 @@
 
                 <div class="space-y-4">
                     @foreach($domainResults as $result)
-                        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition">
-                            <div class="flex items-center gap-5">
-                                <div class="w-16 h-12 rounded-lg {{ $result['popular'] ? 'bg-sky-50 text-[#0369a1]' : 'bg-slate-50 text-slate-500' }} flex items-center justify-center font-black text-lg border {{ $result['popular'] ? 'border-sky-100' : 'border-slate-200' }}">
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-0 shadow-sm hover:shadow-md transition">
+                            
+                            {{-- DOMAIN INFO KIRI --}}
+                            <div class="flex items-center gap-4 sm:gap-5 min-w-0">
+                                <div class="w-14 h-12 sm:w-16 sm:h-12 rounded-lg {{ $result['popular'] ? 'bg-sky-50 text-[#0369a1]' : 'bg-slate-50 text-slate-500' }} flex items-center justify-center font-black text-base sm:text-lg border {{ $result['popular'] ? 'border-sky-100' : 'border-slate-200' }} shrink-0">
                                     {{ $result['ext'] }}
                                 </div>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 text-lg">{{ $result['domain'] }}</h3>
-                                    <p class="text-xs text-slate-500">
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-bold text-slate-900 text-base sm:text-lg truncate">{{ $result['domain'] }}</h3>
+                                    <p class="text-[11px] sm:text-xs text-slate-500 leading-tight mt-0.5">
                                         {{ $result['ext'] === '.com' ? 'The gold standard for business' : ($result['ext'] === '.id' ? 'Perfect for Indonesian brands' : 'Ideal for network & tech projects') }}
                                     </p>
                                 </div>
                             </div>
                             
-                            <div class="flex items-center gap-6">
-                                <div class="text-right">
+                            {{-- HARGA & TOMBOL KANAN (Akan turun ke bawah di HP) --}}
+                            <div class="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                                <div class="text-left sm:text-right">
                                     <div class="font-black text-slate-900 text-lg">Rp {{ number_format($result['price'], 0, ',', '.') }}</div>
                                     <div class="text-[10px] text-slate-400 uppercase font-bold">per year</div>
                                 </div>
-                                <form action="{{ route('order.domain.store') }}" method="POST">
+                                <form action="{{ route('order.domain.store') }}" method="POST" class="shrink-0">
                                     @csrf
                                     <input type="hidden" name="selected_domain" value="{{ $result['domain'] }}">
                                     <input type="hidden" name="domain_price" value="{{ $result['price'] }}">
-                                    <button type="submit" class="px-6 py-2.5 rounded-lg font-bold text-sm transition bg-[#0369a1] hover:bg-[#027ea8] text-white shadow-sm">
+                                    <button type="submit" class="px-6 py-2.5 rounded-lg font-bold text-sm transition bg-[#0369a1] hover:bg-[#027ea8] text-white shadow-sm w-full sm:w-auto">
                                         Select
                                     </button>
                                 </form>

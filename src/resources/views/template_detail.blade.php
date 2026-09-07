@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
 <div class="min-h-screen bg-slate-50 py-12 pt-28">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -13,9 +17,63 @@
         </nav>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <div class="lg:col-span-7">
-                <div class="bg-white rounded-2xl border border-slate-200 p-2 shadow-sm">
-                    <img src="{{ asset($template->images->where('is_primary', true)->first()->image_path ?? 'tech1.png') }}" alt="{{ $template->name }}" class="w-full h-auto rounded-xl object-cover">
+            
+            {{-- KIRI: PREVIEW GAMBAR SLIDER --}}
+            <div class="lg:col-span-7" 
+                 x-data="{ 
+                    activeSlide: 0, 
+                    modalOpen: false,
+                    slides: [
+                        '{{ asset($template->images->where('is_primary', true)->first()->image_path ?? 'tech1.png') }}',
+                        'https://placehold.co/1200x800/e2e8f0/64748b?text=Preview+Halaman+Produk',
+                        'https://placehold.co/1200x800/e2e8f0/64748b?text=Preview+Versi+Mobile'
+                    ]
+                 }">
+                 
+                <div class="bg-white rounded-2xl border border-slate-200 p-2 shadow-sm relative group overflow-hidden">
+                    <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden cursor-pointer" @click="modalOpen = true">
+                        <template x-for="(slide, index) in slides" :key="index">
+                            <img :src="slide" x-show="activeSlide === index" alt="Preview" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105" x-transition.opacity.duration.500ms>
+                        </template>
+                        
+                        {{-- Icon Zoom (Tengah) --}}
+                        <div class="absolute inset-0 bg-slate-900/0 hover:bg-slate-900/20 transition flex items-center justify-center pointer-events-none">
+                            <div class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg">
+                                <svg class="w-6 h-6 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                            </div>
+                        </div>
+
+                        {{-- Navigasi Panah --}}
+                        <button @click.stop="activeSlide = activeSlide === 0 ? slides.length - 1 : activeSlide - 1" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">❮</button>
+                        <button @click.stop="activeSlide = activeSlide === slides.length - 1 ? 0 : activeSlide + 1" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">❯</button>
+                        
+                        {{-- Indikator Titik --}}
+                        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                            <template x-for="(slide, index) in slides" :key="index">
+                                <button @click.stop="activeSlide = index" class="w-2 h-2 rounded-full transition-colors shadow-sm" :class="activeSlide === index ? 'bg-white w-4' : 'bg-white/50'"></button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- MODAL FULLSCREEN --}}
+                <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 sm:p-8">
+                    <div @click.away="modalOpen = false" class="bg-slate-100 rounded-2xl overflow-hidden shadow-2xl max-w-5xl w-full relative flex flex-col max-h-[90vh]">
+                        <button @click="modalOpen = false" class="absolute top-4 right-4 z-50 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/80 transition backdrop-blur-md">✕</button>
+                        <div class="relative w-full flex-1 min-h-[50vh] flex items-center justify-center overflow-auto p-4">
+                            <img :src="slides[activeSlide]" class="max-w-full max-h-[80vh] object-contain rounded-xl shadow-lg">
+                        </div>
+                        <div class="p-6 bg-white border-t border-slate-200 shrink-0 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-xl font-black text-slate-900">{{ $template->name }}</h3>
+                                <p class="text-sm text-slate-500 mt-1">Preview Gambar <span x-text="activeSlide + 1"></span> dari <span x-text="slides.length"></span></p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="activeSlide = activeSlide === 0 ? slides.length - 1 : activeSlide - 1" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg font-bold text-slate-700 text-sm transition">Prev</button>
+                                <button @click="activeSlide = activeSlide === slides.length - 1 ? 0 : activeSlide + 1" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg font-bold text-slate-700 text-sm transition">Next</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

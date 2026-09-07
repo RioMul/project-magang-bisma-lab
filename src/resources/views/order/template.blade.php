@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
 <div class="min-h-screen bg-slate-50 py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-center mb-10">
@@ -62,9 +66,31 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @forelse($templates as $tmpl)
                 <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group">
-                    <div class="aspect-[16/10] bg-slate-900 overflow-hidden relative">
-                        <img src="{{ asset($tmpl->images->where('is_primary', true)->first()->image_path ?? 'tech1.png') }}" alt="{{ $tmpl->name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.onerror=null; this.src='{{ asset('tech1.png') }}';">
+                    
+                    {{-- SLIDER GAMBAR TEMPLATE --}}
+                    <div class="aspect-[16/10] bg-slate-900 overflow-hidden relative" 
+                         x-data="{ activeSlide: 0, slides: [
+                             '{{ asset($tmpl->images->where('is_primary', true)->first()->image_path ?? 'tech1.png') }}',
+                             'https://placehold.co/600x400/e2e8f0/64748b?text=Preview+Fitur+1',
+                             'https://placehold.co/600x400/e2e8f0/64748b?text=Preview+Mobile'
+                         ]}">
+                        
+                        <template x-for="(slide, index) in slides" :key="index">
+                            <img :src="slide" x-show="activeSlide === index" alt="{{ $tmpl->name }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" x-transition.opacity.duration.500ms>
+                        </template>
+
+                        {{-- Tombol Geser (Hanya Muncul Saat di-Hover) --}}
+                        <button @click.prevent="activeSlide = activeSlide === 0 ? slides.length - 1 : activeSlide - 1" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">❮</button>
+                        <button @click.prevent="activeSlide = activeSlide === slides.length - 1 ? 0 : activeSlide + 1" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">❯</button>
+
+                        {{-- Indikator Titik --}}
+                        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                            <template x-for="(slide, index) in slides" :key="index">
+                                <div class="w-1.5 h-1.5 rounded-full transition-colors" :class="activeSlide === index ? 'bg-white' : 'bg-white/40'"></div>
+                            </template>
+                        </div>
                     </div>
+
                     <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
                         <div class="flex items-center justify-between">
                             <h3 class="font-bold text-slate-900 text-base">{{ $tmpl->name }}</h3>

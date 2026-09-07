@@ -35,7 +35,8 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             
             {{-- KIRI: PREVIEW TEMPLATE & DOMAIN --}}
-            <div class="lg:col-span-5 space-y-6 sticky top-28">
+            {{-- Efek 'sticky' diubah menjadi 'lg:sticky lg:top-28' agar tidak aktif/bertumpuk di layar HP --}}
+            <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-28">
                 <div>
                     <h1 class="text-4xl font-black text-slate-900 leading-tight tracking-tight">
                         Choose Your <br>Growth Plan
@@ -74,7 +75,7 @@
             </div>
 
             {{-- KANAN: PAKET DENGAN ACCORDION --}}
-            <div class="lg:col-span-7 space-y-4">
+            <div class="lg:col-span-7 space-y-4 mt-6 lg:mt-0">
                 @foreach($packages as $pkg)
                     <div x-data="{ expanded: {{ ($selectedPackageId == $pkg->id || (!$selectedPackageId && $pkg->is_popular)) ? 'true' : 'false' }} }" 
                          class="bg-white rounded-3xl border-2 transition-all duration-300 overflow-hidden {{ $pkg->is_popular ? 'shadow-md' : 'shadow-sm' }}"

@@ -66,7 +66,7 @@
             </div>
 
             {{-- TABEL RINCIAN --}}
-            <div class="px-8 pb-8 md:px-10 md:pb-10">
+            <div class="px-4 sm:px-8 pb-8 md:px-10 md:pb-10">
                 <div class="border border-slate-200 rounded-xl overflow-hidden print:border-slate-300">
                     <table class="w-full text-left text-sm">
                         <thead class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-wider text-slate-500">
@@ -81,7 +81,7 @@
                                     <p class="font-bold text-slate-900">{{ $order->package->name }} Plan</p>
                                     <p class="text-xs text-slate-500 mt-1">Template: {{ $order->template->name }}</p>
                                 </td>
-                                <td class="p-4 md:p-5 text-right font-bold text-slate-900">
+                                <td class="p-4 md:p-5 text-right font-bold text-slate-900 whitespace-nowrap">
                                     Rp {{ number_format($order->package->price_annually, 0, ',', '.') }}
                                 </td>
                             </tr>
@@ -90,7 +90,7 @@
                                     <p class="font-bold text-slate-900">Registrasi Domain</p>
                                     <p class="text-xs text-slate-500 mt-1">{{ $order->domain_name }} (1 Tahun)</p>
                                 </td>
-                                <td class="p-4 md:p-5 text-right font-bold text-slate-900">
+                                <td class="p-4 md:p-5 text-right font-bold text-slate-900 whitespace-nowrap">
                                     Rp {{ number_format($order->total_amount - $order->package->price_annually, 0, ',', '.') }}
                                 </td>
                             </tr>
@@ -99,7 +99,7 @@
                                     <p class="font-bold text-slate-900">Pajak (PPN 0%)</p>
                                     <p class="text-xs text-slate-500 mt-1">Sesuai kebijakan layanan</p>
                                 </td>
-                                <td class="p-4 md:p-5 text-right font-bold text-slate-900 bg-white">
+                                <td class="p-4 md:p-5 text-right font-bold text-slate-900 bg-white whitespace-nowrap">
                                     Rp 0
                                 </td>
                             </tr>
@@ -109,7 +109,7 @@
                                 <td class="p-4 md:p-5 font-bold text-slate-600 text-left uppercase tracking-wider text-xs">
                                     Total Pembayaran
                                 </td>
-                                <td class="p-4 md:p-5 text-right font-black text-[#0369a1] text-xl md:text-2xl">
+                                <td class="p-4 md:p-5 text-right font-black text-[#0369a1] text-xl md:text-2xl whitespace-nowrap">
                                     Rp {{ number_format($order->total_amount, 0, ',', '.') }}
                                 </td>
                             </tr>
