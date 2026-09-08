@@ -8,7 +8,9 @@ class OrderSessionService
 
     public function setTemplate(int|string $templateId): void
     {
-        session([$this->prefix . 'template_id' => $templateId]);
+        session([
+            $this->prefix . 'template_id' => $templateId,
+        ]);
     }
 
     public function getTemplateId(): int|string|null
@@ -36,7 +38,9 @@ class OrderSessionService
 
     public function setPackage(int|string $packageId): void
     {
-        session([$this->prefix . 'package_id' => $packageId]);
+        session([
+            $this->prefix . 'package_id' => $packageId,
+        ]);
     }
 
     public function getPackageId(): int|string|null
@@ -46,7 +50,9 @@ class OrderSessionService
 
     public function setPaymentMethod(string $method): void
     {
-        session([$this->prefix . 'payment_method' => $method]);
+        session([
+            $this->prefix . 'payment_method' => $method,
+        ]);
     }
 
     public function getPaymentMethod(): ?string
@@ -72,6 +78,13 @@ class OrderSessionService
     public function hasPaymentMethod(): bool
     {
         return session()->has($this->prefix . 'payment_method');
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->hasTemplate()
+            && $this->hasDomain()
+            && $this->hasPackage();
     }
 
     public function getMissingSteps(): array

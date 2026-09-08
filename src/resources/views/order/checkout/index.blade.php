@@ -43,21 +43,26 @@
             </div>
         @endif
 
+        @if(session('success'))
+            <div class="mb-6 p-4 rounded-xl border border-green-200 bg-green-50 text-green-700 font-bold max-w-3xl mx-auto">
+                {{ session('success') }}
+            </div>
+        @endif
+
         @if($errors->any())
             <div class="mb-6 p-4 bg-red-50 text-red-700 text-sm rounded-xl font-bold max-w-3xl mx-auto">
                 Terdapat kesalahan pada inputan Anda. Silakan periksa kembali.
             </div>
         @endif
 
-        @if(!session('order.payment_method'))
-            @include('order.checkout.payment')
-        @elseif(!Auth::check())
+        @if(!Auth::check())
             @include('order.checkout.authentication')
+        @elseif(!$paymentMethod)
+            @include('order.checkout.payment')
         @else
             @include('order.checkout.confirmation')
         @endif
 
     </div>
 </div>
-
 @endsection

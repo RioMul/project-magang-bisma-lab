@@ -25,11 +25,30 @@ class CheckoutController extends Controller
         $missingSteps = $this->orderSession->getMissingSteps();
 
         if (!empty($missingSteps)) {
-            if (Auth::check()) {
-                return redirect()->route('dashboard');
+            if (!$this->orderSession->hasTemplate()) {
+                return redirect()
+                    ->route('order.template')
+                    ->with(
+                        'error',
+                        'Silakan pilih template terlebih dahulu.'
+                    );
             }
 
-            return redirect()->route('order.template');
+            if (!$this->orderSession->hasDomain()) {
+                return redirect()
+                    ->route('order.domain')
+                    ->with(
+                        'error',
+                        'Silakan pilih domain terlebih dahulu.'
+                    );
+            }
+
+            return redirect()
+                ->route('order.package')
+                ->with(
+                    'error',
+                    'Silakan pilih paket terlebih dahulu.'
+                );
         }
 
         $template = Template::with('images')
@@ -41,6 +60,7 @@ class CheckoutController extends Controller
 
         $domain = $this->orderSession->getDomain();
         $domainPrice = $this->orderSession->getDomainPrice();
+        $paymentMethod = $this->orderSession->getPaymentMethod();
 
         $totalAmount = $package->price_annually + $domainPrice;
 
@@ -50,7 +70,8 @@ class CheckoutController extends Controller
                 'package',
                 'domain',
                 'domainPrice',
-                'totalAmount'
+                'totalAmount',
+                'paymentMethod'
             ))
             ->header(
                 'Cache-Control',
@@ -62,6 +83,15 @@ class CheckoutController extends Controller
 
     public function savePaymentMethod(Request $request)
     {
+        if (!$this->orderSession->isComplete()) {
+            return redirect()
+                ->route('order.checkout')
+                ->with(
+                    'error',
+                    'Data pesanan belum lengkap.'
+                );
+        }
+
         $validated = $request->validate([
             'payment_method' => [
                 'required',
@@ -78,7 +108,7 @@ class CheckoutController extends Controller
 
     public function resetPaymentMethod()
     {
-        session()->forget('order.payment_method');
+        $this->orderSession->clearPaymentMethod();
 
         return redirect()->route('order.checkout');
     }
@@ -129,16 +159,30 @@ class CheckoutController extends Controller
 
     public function finalize()
     {
-        if (
-            !empty($this->orderSession->getMissingSteps()) ||
-            !$this->orderSession->hasPaymentMethod() ||
-            !Auth::check()
-        ) {
+        if (!$this->orderSession->isComplete()) {
             return redirect()
-                ->route('dashboard')
+                ->route('order.checkout')
                 ->with(
                     'error',
-                    'Sesi pembayaran telah kedaluwarsa atau pesanan sudah diproses.'
+                    'Data pesanan belum lengkap.'
+                );
+        }
+
+        if (!$this->orderSession->hasPaymentMethod()) {
+            return redirect()
+                ->route('order.checkout')
+                ->with(
+                    'error',
+                    'Silakan pilih metode pembayaran terlebih dahulu.'
+                );
+        }
+
+        if (!Auth::check()) {
+            return redirect()
+                ->route('order.checkout')
+                ->with(
+                    'error',
+                    'Silakan login atau daftar terlebih dahulu.'
                 );
         }
 
@@ -188,6 +232,9 @@ class CheckoutController extends Controller
 
         return redirect()
             ->route('order.invoice', $order->order_number)
-            ->with('payment_success', 'Pembayaran berhasil!');
+            ->with(
+                'payment_success',
+                'Pembayaran berhasil!'
+            );
     }
 }

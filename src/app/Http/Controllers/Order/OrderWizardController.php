@@ -36,11 +36,13 @@ class OrderWizardController extends Controller
 
         $templates = $query->get();
         $categories = TemplateType::pluck('name')->toArray();
+        $selectedTemplateId = $this->orderSession->getTemplateId();
 
         return view('order.wizard.template', compact(
             'templates',
             'categories',
-            'selectedCategory'
+            'selectedCategory',
+            'selectedTemplateId'
         ));
     }
 
@@ -99,10 +101,15 @@ class OrderWizardController extends Controller
             }
         }
 
+        $selectedDomain = $this->orderSession->getDomain();
+        $selectedDomainPrice = $this->orderSession->getDomainPrice();
+
         return view('order.wizard.domain', compact(
             'selectedTemplate',
             'searchQuery',
-            'domainResults'
+            'domainResults',
+            'selectedDomain',
+            'selectedDomainPrice'
         ));
     }
 
@@ -110,13 +117,16 @@ class OrderWizardController extends Controller
     {
         if (!$this->orderSession->hasTemplate()) {
             return redirect()
-                ->route('order.domain')
-                ->with('error', 'Silakan pilih template terlebih dahulu.');
+                ->route('order.template')
+                ->with(
+                    'error',
+                    'Silakan pilih template terlebih dahulu.'
+                );
         }
 
         $validated = $request->validate([
-            'selected_domain' => 'required|string',
-            'domain_price' => 'required|numeric',
+            'selected_domain' => 'required|string|max:255',
+            'domain_price' => 'required|numeric|min:0',
         ]);
 
         $this->orderSession->setDomain(
@@ -139,24 +149,35 @@ class OrderWizardController extends Controller
 
         $selectedPackageId = $this->orderSession->getPackageId();
         $selectedDomain = $this->orderSession->getDomain();
+        $selectedDomainPrice = $this->orderSession->getDomainPrice();
 
         return view('order.wizard.package', compact(
             'packages',
             'selectedTemplate',
             'selectedPackageId',
-            'selectedDomain'
+            'selectedDomain',
+            'selectedDomainPrice'
         ));
     }
 
     public function storePackage(Request $request)
     {
-        if (
-            !$this->orderSession->hasTemplate() ||
-            !$this->orderSession->hasDomain()
-        ) {
+        if (!$this->orderSession->hasTemplate()) {
             return redirect()
-                ->route('order.package')
-                ->with('error', 'Data sebelumnya belum lengkap.');
+                ->route('order.template')
+                ->with(
+                    'error',
+                    'Silakan pilih template terlebih dahulu.'
+                );
+        }
+
+        if (!$this->orderSession->hasDomain()) {
+            return redirect()
+                ->route('order.domain')
+                ->with(
+                    'error',
+                    'Silakan pilih domain terlebih dahulu.'
+                );
         }
 
         $validated = $request->validate([

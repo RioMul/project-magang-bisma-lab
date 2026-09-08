@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('order')
     ->name('order.')
     ->group(function () {
-
-        // Wizard
         Route::get('/template', [
             OrderWizardController::class,
             'template',
@@ -40,7 +38,6 @@ Route::prefix('order')
             'storePackage',
         ])->name('package.store');
 
-        // Checkout
         Route::get('/checkout', [
             CheckoutController::class,
             'index',
@@ -71,7 +68,6 @@ Route::prefix('order')
             'finalize',
         ])->name('checkout.finalize');
 
-        // Invoice
         Route::get('/invoice/{order:order_number}', [
             InvoiceController::class,
             'show',
