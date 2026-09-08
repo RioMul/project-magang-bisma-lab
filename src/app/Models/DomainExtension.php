@@ -6,5 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class DomainExtension extends Model
 {
-    //
+    protected $fillable = [
+        'name',
+        'extension',
+        'is_active',
+    ];
+
+    public function prices()
+    {
+        return $this->hasMany(DomainPrice::class);
+    }
 }
