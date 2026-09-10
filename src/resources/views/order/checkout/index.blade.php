@@ -4,7 +4,6 @@
 <div class="min-h-screen bg-[#f8fafc] py-12 pt-32">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {{-- Stepper --}}
         <div class="flex items-center justify-center mb-16">
             <div class="flex items-center space-x-3 sm:space-x-4">
 
@@ -55,10 +54,10 @@
             </div>
         @endif
 
-        @if(!Auth::check())
-            @include('order.checkout.authentication')
-        @elseif(!$paymentMethod)
+        @if(!$paymentMethod)
             @include('order.checkout.payment')
+        @elseif(!Auth::check())
+            @include('order.checkout.authentication')
         @else
             @include('order.checkout.confirmation')
         @endif

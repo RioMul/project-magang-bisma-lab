@@ -43,7 +43,7 @@
 
             <a
                 href="{{ route('dashboard') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-100 text-slate-800 font-semibold text-sm">
+                class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('dashboard') ? 'bg-slate-100 text-slate-800 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }} text-sm transition">
 
                 <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <rect x="4" y="4" width="6" height="6" rx="1"/>
@@ -56,8 +56,8 @@
             </a>
 
             <a
-                href="#"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition text-sm">
+                href="{{ route('client.website.edit') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('client.website.*') ? 'bg-slate-100 text-slate-800 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }} transition text-sm">
 
                 <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 20h16M6 17l8.5-8.5a2.1 2.1 0 013 3L9 20H6v-3z"/>
@@ -67,8 +67,8 @@
             </a>
 
             <a
-                href="#"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition text-sm">
+                href="{{ route('client.pages.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl {{ request()->routeIs('client.pages.*') ? 'bg-slate-100 text-slate-800 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }} transition text-sm">
 
                 <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 4h9l3 3v13H6V4z"/>
@@ -79,7 +79,7 @@
             </a>
 
             <a
-                href="#"
+                href="javascript:void(0)"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition text-sm">
 
                 <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -90,7 +90,7 @@
             </a>
 
             <a
-                href="#"
+                href="javascript:void(0)"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition text-sm">
 
                 <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -108,7 +108,7 @@
     <div class="px-4 py-5 border-t border-slate-100">
 
         <a
-            href="#"
+            href="javascript:void(0)"
             class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition text-sm">
 
             <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

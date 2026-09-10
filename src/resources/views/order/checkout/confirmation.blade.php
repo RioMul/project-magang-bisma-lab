@@ -1,177 +1,236 @@
-<div class="max-w-4xl mx-auto">
+<div class="max-w-5xl mx-auto">
 
     <form
         action="{{ route('order.checkout.reset_payment') }}"
         method="POST"
-        class="mb-6">
-
+        class="mb-5"
+    >
         @csrf
 
         <button
             type="submit"
-            class="text-sm font-bold text-slate-500 hover:text-[#0369a1]">
-
+            class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#0369a1] transition"
+        >
             ← Ganti Metode Pembayaran
-
         </button>
-
     </form>
 
-    <div class="mb-8">
+    <div class="mb-7">
 
-        <h1 class="text-3xl font-black text-slate-900">
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-900">
             Konfirmasi Pesanan
         </h1>
 
-        <p class="text-slate-500 text-sm mt-1">
-            Pastikan seluruh detail pesanan sudah sesuai.
+        <p class="text-sm text-slate-500 mt-1">
+            Periksa kembali pesanan Anda sebelum melakukan pembayaran.
         </p>
 
     </div>
 
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
 
-        <div class="relative h-64 bg-slate-900">
+        <div class="grid grid-cols-1 lg:grid-cols-12">
 
-            <img
-                src="{{ asset(
-                    $template->images
-                        ->where('is_primary', true)
-                        ->first()
-                        ->image_path ?? 'tech1.png'
-                ) }}"
-                class="w-full h-full object-cover">
+            <div class="lg:col-span-7 p-6 sm:p-8 lg:p-10">
 
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent flex items-end p-8">
+                <div class="flex items-center gap-3 mb-7">
 
-                <div>
+                    <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        ✓
+                    </div>
 
-                    <span class="text-xs font-bold text-sky-300 uppercase">
-                        Template Terpilih
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-emerald-600">
+                            Pesanan Siap
+                        </p>
+
+                        <p class="text-sm font-bold text-slate-900">
+                            Semua informasi sudah lengkap
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="space-y-6">
+
+                    <div>
+
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">
+                            Akun
+                        </p>
+
+                        <div class="flex items-center gap-3">
+
+                            <div class="w-10 h-10 rounded-full bg-sky-50 text-[#0369a1] flex items-center justify-center font-black">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
+
+                            <div>
+                                <p class="text-sm font-bold text-slate-900">
+                                    {{ Auth::user()->name }}
+                                </p>
+
+                                <p class="text-xs text-slate-500">
+                                    {{ Auth::user()->email }}
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-6">
+
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-4">
+                            Detail Pesanan
+                        </p>
+
+                        <div class="space-y-4">
+
+                            <div class="flex justify-between gap-5">
+
+                                <div>
+                                    <p class="text-xs text-slate-500">
+                                        Website Template
+                                    </p>
+
+                                    <p class="text-sm font-bold text-slate-900 mt-1">
+                                        {{ $template->name }}
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <div class="flex justify-between gap-5">
+
+                                <div>
+                                    <p class="text-xs text-slate-500">
+                                        Domain
+                                    </p>
+
+                                    <p class="text-sm font-bold text-slate-900 mt-1 break-all">
+                                        {{ $domain }}
+                                    </p>
+                                </div>
+
+                                <span class="text-sm font-bold text-slate-900 whitespace-nowrap">
+                                    Rp {{ number_format($domainPrice, 0, ',', '.') }}
+                                </span>
+
+                            </div>
+
+                            <div class="flex justify-between gap-5">
+
+                                <div>
+                                    <p class="text-xs text-slate-500">
+                                        Paket
+                                    </p>
+
+                                    <p class="text-sm font-bold text-slate-900 mt-1">
+                                        {{ $package->name }}
+                                    </p>
+                                </div>
+
+                                <span class="text-sm font-bold text-slate-900 whitespace-nowrap">
+                                    Rp {{ number_format($package->price_annually, 0, ',', '.') }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-6">
+
+                        <div class="flex justify-between items-center gap-5">
+
+                            <div>
+
+                                <p class="text-xs text-slate-500">
+                                    Metode Pembayaran
+                                </p>
+
+                                <p class="text-sm font-bold text-slate-900 mt-1 uppercase">
+                                    {{ str_replace('_', ' ', $paymentMethod) }}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="lg:col-span-5 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-200 p-6 sm:p-8 flex flex-col">
+
+                <div class="mb-5">
+
+                    <span class="text-[10px] font-black uppercase tracking-wider text-[#0369a1]">
+                        Preview Website
                     </span>
 
-                    <h2 class="text-3xl font-black text-white mt-1">
+                    <h2 class="text-xl font-black text-slate-900 mt-1">
                         {{ $template->name }}
                     </h2>
 
                 </div>
 
-            </div>
+                <div class="rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 shadow-sm">
 
-        </div>
-
-        <div class="p-6 sm:p-10">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-
-                <div class="bg-slate-50 rounded-2xl p-5">
-
-                    <p class="text-xs text-slate-400 uppercase font-bold">
-                        Akun
-                    </p>
-
-                    <p class="font-bold text-slate-900 mt-2">
-                        {{ Auth::user()->name }}
-                    </p>
-
-                    <p class="text-sm text-slate-500">
-                        {{ Auth::user()->email }}
-                    </p>
+                    <img
+                        src="{{ asset($template->images->where('is_primary', true)->first()?->image_path ?? 'tech1.png') }}"
+                        alt="{{ $template->name }}"
+                        class="w-full h-64 sm:h-72 object-cover"
+                    >
 
                 </div>
 
-                <div class="bg-slate-50 rounded-2xl p-5">
+                <div class="mt-auto pt-7">
 
-                    <p class="text-xs text-slate-400 uppercase font-bold">
-                        Pembayaran
-                    </p>
+                    <div class="flex items-end justify-between gap-4 mb-5">
 
-                    <p class="font-bold text-slate-900 mt-2 uppercase">
-                        {{ str_replace('_', ' ', session('order.payment_method')) }}
-                    </p>
+                        <div>
 
-                </div>
+                            <p class="text-xs font-bold text-slate-500">
+                                Total Pembayaran
+                            </p>
 
-            </div>
+                            <p class="text-2xl sm:text-3xl font-black text-[#0369a1] mt-1">
+                                Rp {{ number_format($totalAmount, 0, ',', '.') }}
+                            </p>
 
-            <h3 class="font-black text-lg text-slate-800 mb-4">
-                Rincian Layanan
-            </h3>
-
-            <div class="border border-slate-200 rounded-2xl overflow-hidden mb-8">
-
-                <div class="p-5 flex justify-between gap-4 border-b border-slate-100">
-
-                    <div>
-
-                        <p class="font-bold text-slate-900">
-                            {{ $domain }}
-                        </p>
-
-                        <p class="text-xs text-slate-400">
-                            Domain Registration (1 Tahun)
-                        </p>
+                        </div>
 
                     </div>
 
-                    <span class="font-bold whitespace-nowrap">
-                        Rp {{ number_format($domainPrice, 0, ',', '.') }}
-                    </span>
+                    <form
+                        action="{{ route('order.checkout.finalize') }}"
+                        method="POST"
+                    >
+                        @csrf
 
-                </div>
+                        <button
+                            type="submit"
+                            class="w-full flex items-center justify-center gap-2 bg-[#0369a1] hover:bg-[#075985] text-white py-4 rounded-xl font-black shadow-md transition"
+                        >
+                            Bayar Sekarang
 
-                <div class="p-5 flex justify-between gap-4">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-5-5 5 5-5 5"/>
+                            </svg>
+                        </button>
 
-                    <div>
+                    </form>
 
-                        <p class="font-bold text-slate-900">
-                            {{ $package->name }} Plan
-                        </p>
-
-                        <p class="text-xs text-slate-400">
-                            Paket Tahunan
-                        </p>
-
-                    </div>
-
-                    <span class="font-bold whitespace-nowrap">
-                        Rp {{ number_format($package->price_annually, 0, ',', '.') }}
-                    </span>
-
-                </div>
-
-            </div>
-
-            <div class="bg-slate-50 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-center gap-5">
-
-                <div class="text-center sm:text-left">
-
-                    <p class="text-xs font-bold text-slate-500 uppercase">
-                        Total Dibayar
-                    </p>
-
-                    <p class="text-3xl font-black text-[#0369a1] mt-1">
-                        Rp {{ number_format($totalAmount, 0, ',', '.') }}
+                    <p class="text-[10px] text-slate-400 text-center mt-3">
+                        Dengan melanjutkan, Anda menyetujui detail pesanan yang ditampilkan.
                     </p>
 
                 </div>
-
-                <form
-                    action="{{ route('order.checkout.finalize') }}"
-                    method="POST"
-                    class="w-full sm:w-auto">
-
-                    @csrf
-
-                    <button
-                        type="submit"
-                        class="w-full sm:w-auto px-10 py-4 bg-[#0369a1] hover:bg-[#027ea8] text-white rounded-xl font-black">
-
-                        Bayar Sekarang
-
-                    </button>
-
-                </form>
 
             </div>
 

@@ -60,6 +60,13 @@ class OrderSessionService
         return session($this->prefix . 'payment_method');
     }
 
+    public function clearPaymentMethod(): void
+    {
+        session()->forget(
+            $this->prefix . 'payment_method'
+        );
+    }
+
     public function hasTemplate(): bool
     {
         return session()->has($this->prefix . 'template_id');

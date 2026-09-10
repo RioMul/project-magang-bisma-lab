@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Order;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Order\Checkout\LoginRequest;
+use App\Http\Requests\Order\Checkout\PaymentRequest;
+use App\Http\Requests\Order\Checkout\RegisterRequest;
 use App\Models\Order;
 use App\Models\Package;
 use App\Models\Template;
@@ -19,8 +22,7 @@ class CheckoutController extends Controller
 {
     public function __construct(
         private OrderSessionService $orderSession
-    ) {
-    }
+    ) {}
 
     public function index()
     {
@@ -30,11 +32,9 @@ class CheckoutController extends Controller
             if (!$this->orderSession->hasTemplate()) {
                 return redirect()->route('order.template')->with('error', 'Silakan pilih template terlebih dahulu.');
             }
-
             if (!$this->orderSession->hasDomain()) {
                 return redirect()->route('order.domain')->with('error', 'Silakan pilih domain terlebih dahulu.');
             }
-
             return redirect()->route('order.package')->with('error', 'Silakan pilih paket terlebih dahulu.');
         }
 
@@ -54,17 +54,13 @@ class CheckoutController extends Controller
             ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
     }
 
-    public function savePaymentMethod(Request $request)
+    public function savePaymentMethod(PaymentRequest $request)
     {
         if (!$this->orderSession->isComplete()) {
             return redirect()->route('order.checkout')->with('error', 'Data pesanan belum lengkap.');
         }
 
-        $validated = $request->validate([
-            'payment_method' => ['required', 'in:bank_transfer,credit_card,ewallet,qris'],
-        ]);
-
-        $this->orderSession->setPaymentMethod($validated['payment_method']);
+        $this->orderSession->setPaymentMethod($request->validated('payment_method'));
 
         return redirect()->route('order.checkout');
     }
@@ -75,14 +71,9 @@ class CheckoutController extends Controller
         return redirect()->route('order.checkout');
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (!Auth::attempt($request->validated(), $request->boolean('remember'))) {
             return back()->withErrors(['login_email' => 'Email atau password salah.'])->withInput();
         }
 
@@ -90,18 +81,12 @@ class CheckoutController extends Controller
         return redirect()->route('order.checkout');
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|min:8|confirmed',
-        ]);
-
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'name' => $request->validated('name'),
+            'email' => $request->validated('email'),
+            'password' => Hash::make($request->validated('password')),
         ]);
 
         Auth::login($user);
@@ -125,7 +110,6 @@ class CheckoutController extends Controller
         }
 
         try {
-            // Memulai transaksi database agar aman dari kegagalan sistem
             DB::beginTransaction();
 
             $template = Template::findOrFail($this->orderSession->getTemplateId());

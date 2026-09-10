@@ -2,7 +2,7 @@
 
     <button
         @click="sidebarOpen = true"
-        class="lg:hidden mr-4 p-2 rounded-lg hover:bg-slate-100">
+        class="lg:hidden mr-4 p-2 rounded-lg hover:bg-slate-100 shrink-0">
 
         <svg class="w-6 h-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
@@ -10,7 +10,7 @@
 
     </button>
 
-    <div class="relative w-full max-w-xl hidden sm:block">
+    <div class="relative w-full max-w-xl flex-1 mr-4">
 
         <svg
             class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
@@ -31,7 +31,7 @@
 
     </div>
 
-    <div class="ml-auto flex items-center gap-3">
+    <div class="ml-auto flex items-center gap-3 shrink-0">
 
         <div class="text-right hidden sm:block">
 
