@@ -17,7 +17,7 @@ class DashboardController extends Controller
 
         $latestOrder = $orders->first();
 
-        return view('dashboard', compact(
+        return view('client.dashboard', compact(
             'orders',
             'latestOrder'
         ));

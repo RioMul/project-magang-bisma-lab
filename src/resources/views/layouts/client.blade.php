@@ -16,6 +16,7 @@
 
     @stack('styles')
 </head>
+
 <body class="bg-[#f7f8fc] text-slate-800 antialiased overflow-hidden">
 
 <div
@@ -24,7 +25,14 @@
 
     @include('components.client.sidebar')
 
-    <main class="flex-1 min-w-0 flex flex-col h-screen overflow-y-auto">
+    <div
+        x-show="sidebarOpen"
+        x-cloak
+        @click="sidebarOpen = false"
+        class="fixed inset-0 z-40 bg-slate-900/40 lg:hidden">
+    </div>
+
+    <main class="flex-1 min-w-0 flex flex-col h-screen overflow-y-auto lg:ml-64">
 
         @include('components.client.topbar')
 
