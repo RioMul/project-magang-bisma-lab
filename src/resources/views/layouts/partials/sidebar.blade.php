@@ -2,19 +2,18 @@
     class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-200 lg:translate-x-0"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
 
-    {{-- LOGO (Dikembalikan ke logo.png asli dan diratakan ke kiri) --}}
-    <div class="h-24 px-6 border-b border-slate-100 flex flex-col justify-center">
+    <div class="h-24 px-6 border-b border-slate-100 flex flex-col items-center justify-center">
 
         <a
             href="{{ route('home') }}"
-            class="flex flex-col items-start group">
+            class="flex flex-col items-center justify-center group">
 
             <img
                 src="{{ asset('logo.png') }}"
                 alt="BismaLabs"
-                class="h-8 w-auto object-contain">
+                class="w-32 h-auto object-contain">
 
-            <span class="mt-2 text-[9px] font-medium tracking-[0.18em] text-slate-400 uppercase">
+            <span class="mt-1 text-[9px] font-medium tracking-[0.18em] text-slate-400 uppercase">
                 Client Area
             </span>
 
@@ -86,12 +85,7 @@
                         stroke="currentColor"
                         stroke-width="2">
 
-                        <rect
-                            x="5"
-                            y="4"
-                            width="14"
-                            height="16"
-                            rx="2"/>
+                        <rect x="5" y="4" width="14" height="16" rx="2"/>
 
                         <path
                             stroke-linecap="round"
@@ -104,7 +98,7 @@
                 </a>
 
                 <a
-                    href="javascript:void(0)"
+                    href="{{ route('client.statistics.index') }}"
                     class="flex items-center gap-4 px-4 py-3 rounded-xl text-sm transition
                     {{ request()->routeIs('client.statistics.*') ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
 
@@ -128,14 +122,14 @@
 
             @else
 
-                <div class="flex items-center gap-4 px-4 py-3 text-sm text-slate-300 cursor-not-allowed">
+                <div class="flex items-center gap-4 px-4 py-3 text-sm text-slate-400 cursor-not-allowed">
 
                     <svg
                         class="w-5 h-5 shrink-0"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        stroke-width="2">
+                        stroke-width="1.8">
 
                         <path
                             stroke-linecap="round"
@@ -144,45 +138,43 @@
 
                     </svg>
 
-                    <span class="flex-1">Edit Website</span>
+                    <span class="flex-1">
+                        Edit Website
+                    </span>
 
                     <svg
-                        class="w-4 h-4"
+                        class="w-4 h-4 text-slate-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        stroke-width="2">
+                        stroke-width="1.8">
 
                         <rect
                             x="5"
-                            y="10"
+                            y="11"
                             width="14"
-                            height="10"
+                            height="9"
                             rx="2"/>
 
                         <path
                             stroke-linecap="round"
-                            d="M8 10V7a4 4 0 018 0v3"/>
+                            stroke-linejoin="round"
+                            d="M8 11V8a4 4 0 018 0v3"/>
 
                     </svg>
 
                 </div>
 
-                <div class="flex items-center gap-4 px-4 py-3 text-sm text-slate-300 cursor-not-allowed">
+                <div class="flex items-center gap-4 px-4 py-3 text-sm text-slate-400 cursor-not-allowed">
 
                     <svg
                         class="w-5 h-5 shrink-0"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        stroke-width="2">
+                        stroke-width="1.8">
 
-                        <rect
-                            x="5"
-                            y="4"
-                            width="14"
-                            height="16"
-                            rx="2"/>
+                        <rect x="5" y="4" width="14" height="16" rx="2"/>
 
                         <path
                             stroke-linecap="round"
@@ -190,38 +182,41 @@
 
                     </svg>
 
-                    <span class="flex-1">Halaman</span>
+                    <span class="flex-1">
+                        Halaman
+                    </span>
 
                     <svg
-                        class="w-4 h-4"
+                        class="w-4 h-4 text-slate-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        stroke-width="2">
+                        stroke-width="1.8">
 
                         <rect
                             x="5"
-                            y="10"
+                            y="11"
                             width="14"
-                            height="10"
+                            height="9"
                             rx="2"/>
 
                         <path
                             stroke-linecap="round"
-                            d="M8 10V7a4 4 0 018 0v3"/>
+                            stroke-linejoin="round"
+                            d="M8 11V8a4 4 0 018 0v3"/>
 
                     </svg>
 
                 </div>
 
-                <div class="flex items-center gap-4 px-4 py-3 text-sm text-slate-300 cursor-not-allowed">
+                <div class="flex items-center gap-4 px-4 py-3 text-sm text-slate-400 cursor-not-allowed">
 
                     <svg
                         class="w-5 h-5 shrink-0"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        stroke-width="2">
+                        stroke-width="1.8">
 
                         <path
                             stroke-linecap="round"
@@ -230,25 +225,28 @@
 
                     </svg>
 
-                    <span class="flex-1">Statistik</span>
+                    <span class="flex-1">
+                        Statistik
+                    </span>
 
                     <svg
-                        class="w-4 h-4"
+                        class="w-4 h-4 text-slate-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        stroke-width="2">
+                        stroke-width="1.8">
 
                         <rect
                             x="5"
-                            y="10"
+                            y="11"
                             width="14"
-                            height="10"
+                            height="9"
                             rx="2"/>
 
                         <path
                             stroke-linecap="round"
-                            d="M8 10V7a4 4 0 018 0v3"/>
+                            stroke-linejoin="round"
+                            d="M8 11V8a4 4 0 018 0v3"/>
 
                     </svg>
 
@@ -257,7 +255,7 @@
             @endif
 
             <a
-                href="javascript:void(0)"
+                href="{{ route('client.billing.index') }}"
                 class="flex items-center gap-4 px-4 py-3 rounded-xl text-sm transition
                 {{ request()->routeIs('client.billing.*') ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
 
@@ -290,7 +288,7 @@
         <div class="border-t border-slate-100 px-4 py-5 space-y-1">
 
             <a
-                href="javascript:void(0)"
+                href="#"
                 class="flex items-center gap-4 px-4 py-3 rounded-xl text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition">
 
                 <svg

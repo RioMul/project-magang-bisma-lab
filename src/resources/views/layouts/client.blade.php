@@ -21,7 +21,7 @@
 
 @php
     $canManageWebsite = \App\Models\Order::where('user_id', auth()->id())
-        ->whereRaw('LOWER(status) = ?', ['paid'])
+        ->where('status', 'paid')
         ->exists();
 @endphp
 
@@ -29,7 +29,7 @@
     x-data="{ sidebarOpen: false }"
     class="flex h-screen w-full">
 
-    @include('components.client.sidebar')
+    @include('layouts.partials.sidebar')
 
     <div
         x-show="sidebarOpen"
@@ -40,7 +40,7 @@
 
     <main class="flex-1 min-w-0 flex flex-col h-screen overflow-y-auto lg:ml-64">
 
-        @include('components.client.topbar')
+        @include('layouts.partials.topbar')
 
         <div class="p-5 sm:p-8 lg:p-10 max-w-[1450px] w-full mx-auto">
             @yield('content')
