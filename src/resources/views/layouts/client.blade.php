@@ -19,6 +19,12 @@
 
 <body class="bg-[#f7f8fc] text-slate-800 antialiased overflow-hidden">
 
+@php
+    $canManageWebsite = \App\Models\Order::where('user_id', auth()->id())
+        ->whereRaw('LOWER(status) = ?', ['paid'])
+        ->exists();
+@endphp
+
 <div
     x-data="{ sidebarOpen: false }"
     class="flex h-screen w-full">
