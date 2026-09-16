@@ -12,6 +12,35 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+        $baseQuery = User::query()
+            ->where('is_admin', false);
+
+        $totalUsers = (clone $baseQuery)->count();
+
+        $activeUsers = (clone $baseQuery)
+            ->whereHas('orders', function ($query) {
+                $query->where('status', 'paid');
+            })
+            ->count();
+
+        $pendingUsers = (clone $baseQuery)
+            ->whereHas('orders', function ($query) {
+                $query->where('status', 'pending');
+            })
+            ->count();
+
+        $expiredUsers = (clone $baseQuery)
+            ->whereHas('orders', function ($query) {
+                $query->where('status', 'expired');
+            })
+            ->count();
+
+        $newUsers = (clone $baseQuery)
+            ->whereDate('created_at', '>=', now()->subDays(30))
+            ->count();
+
+        $payingUsers = $activeUsers;
+
         $users = User::query()
             ->where('is_admin', false)
             ->with([
@@ -23,21 +52,53 @@ class UserController extends Controller
                 'orders.payment',
             ])
             ->withCount('orders')
-            ->when(
-                $request->search,
-                function ($query, $search) {
-                    $query->where(function ($query) use ($search) {
-                        $query
-                            ->where('name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%");
-                    });
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->input('search');
+
+                $query->where(function ($query) use ($search) {
+                    $query
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhereHas('orders', function ($query) use ($search) {
+                            $query->where('domain_name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $status = $request->input('status');
+
+                if ($status === 'new') {
+                    $query->whereDoesntHave('orders');
+                    return;
                 }
-            )
+
+                $query->whereHas('orders', function ($query) use ($status) {
+                    $query->where('status', $status);
+                });
+            })
+            ->when($request->filled('plan'), function ($query) use ($request) {
+                $query->whereHas('orders.package', function ($query) use ($request) {
+                    $query->where('id', $request->input('plan'));
+                });
+            })
             ->latest()
             ->paginate(12)
             ->withQueryString();
 
-        return view('admin.users.index', compact('users'));
+        $packages = \App\Models\Package::query()
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.users.index', compact(
+            'users',
+            'packages',
+            'totalUsers',
+            'activeUsers',
+            'pendingUsers',
+            'expiredUsers',
+            'newUsers',
+            'payingUsers'
+        ));
     }
 
     public function create()
@@ -48,9 +109,23 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+            ],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
         ]);
 
         User::create([
@@ -91,21 +166,32 @@ class UserController extends Controller
         abort_if($user->is_admin, 404);
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
             'email' => [
                 'required',
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => [
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
 
         if (!empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
+            $user->password = Hash::make(
+                $validated['password']
+            );
         }
 
         $user->save();
@@ -118,6 +204,15 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         abort_if($user->is_admin, 404);
+
+        if ($user->orders()->exists()) {
+            return redirect()
+                ->route('admin.users.show', $user)
+                ->with(
+                    'error',
+                    'User tidak dapat dihapus karena masih memiliki riwayat pesanan.'
+                );
+        }
 
         $user->delete();
 

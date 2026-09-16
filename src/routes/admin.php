@@ -32,11 +32,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/analytics', [AnalyticsController::class, 'index'])
             ->name('analytics');
 
-        Route::get('/users', [UserController::class, 'index'])
-            ->name('users.index');
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [UserController::class, 'index'])
+                ->name('index');
 
-        Route::get('/users/{user}', [UserController::class, 'show'])
-            ->name('users.show');
+            Route::get('/create', [UserController::class, 'create'])
+                ->name('create');
+
+            Route::post('/', [UserController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{user}', [UserController::class, 'show'])
+                ->name('show');
+
+            Route::get('/{user}/edit', [UserController::class, 'edit'])
+                ->name('edit');
+
+            Route::put('/{user}', [UserController::class, 'update'])
+                ->name('update');
+
+            Route::delete('/{user}', [UserController::class, 'destroy'])
+                ->name('destroy');
+        });
 
         Route::get('/templates', [TemplateController::class, 'index'])
             ->name('templates.index');

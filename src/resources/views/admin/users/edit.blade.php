@@ -1,19 +1,20 @@
-@extends('layouts.admin')
+@extends('admin.layouts.app')
 
-@section('title', 'Edit User | Admin Panel')
+@section('title', 'Edit User')
 
 @section('content')
-<div class="mx-auto max-w-3xl">
 
-    <div class="mb-6">
+<div class="mx-auto max-w-3xl space-y-6">
+
+    <div>
         <a
             href="{{ route('admin.users.show', $user) }}"
-            class="text-[10px] font-semibold text-sky-600"
+            class="text-[10px] font-semibold text-sky-600 hover:text-sky-700"
         >
-            ← Back to User
+            ← Back to User Detail
         </a>
 
-        <h1 class="mt-4 text-2xl font-bold text-slate-800">
+        <h1 class="mt-3 text-2xl font-bold text-slate-800">
             Edit User
         </h1>
 
@@ -22,11 +23,16 @@
         </p>
     </div>
 
-    <div class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+    <form
+        method="POST"
+        action="{{ route('admin.users.update', $user) }}"
+        class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm"
+    >
 
-        <form method="POST" action="{{ route('admin.users.update', $user) }}" class="space-y-5">
-            @csrf
-            @method('PUT')
+        @csrf
+        @method('PUT')
+
+        <div class="space-y-5">
 
             <div>
                 <label class="text-[10px] font-semibold text-slate-600">
@@ -38,11 +44,13 @@
                     name="name"
                     value="{{ old('name', $user->name) }}"
                     required
-                    class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                 >
 
                 @error('name')
-                    <p class="mt-1 text-[10px] text-red-500">{{ $message }}</p>
+                    <p class="mt-1 text-[10px] text-red-500">
+                        {{ $message }}
+                    </p>
                 @enderror
             </div>
 
@@ -56,12 +64,26 @@
                     name="email"
                     value="{{ old('email', $user->email) }}"
                     required
-                    class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                 >
 
                 @error('email')
-                    <p class="mt-1 text-[10px] text-red-500">{{ $message }}</p>
+                    <p class="mt-1 text-[10px] text-red-500">
+                        {{ $message }}
+                    </p>
                 @enderror
+            </div>
+
+            <div class="border-t border-slate-100 pt-5">
+
+                <p class="text-xs font-semibold text-slate-700">
+                    Change Password
+                </p>
+
+                <p class="mt-1 text-[10px] text-slate-400">
+                    Kosongkan jika password tidak ingin diubah.
+                </p>
+
             </div>
 
             <div class="grid gap-5 sm:grid-cols-2">
@@ -74,13 +96,8 @@
                     <input
                         type="password"
                         name="password"
-                        class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-                        placeholder="Leave blank to keep current"
+                        class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                     >
-
-                    @error('password')
-                        <p class="mt-1 text-[10px] text-red-500">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <div>
@@ -91,53 +108,40 @@
                     <input
                         type="password"
                         name="password_confirmation"
-                        class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-                        placeholder="Repeat new password"
+                        class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                     >
                 </div>
 
             </div>
 
-            <div class="flex justify-between border-t border-slate-100 pt-5">
+            @error('password')
+                <p class="text-[10px] text-red-500">
+                    {{ $message }}
+                </p>
+            @enderror
 
-                <form
-                    method="POST"
-                    action="{{ route('admin.users.destroy', $user) }}"
-                    onsubmit="return confirm('Hapus user ini?')"
-                >
-                    @csrf
-                    @method('DELETE')
+        </div>
 
-                    <button
-                        type="submit"
-                        class="rounded-lg bg-red-50 px-4 py-2 text-[10px] font-semibold text-red-500 hover:bg-red-100"
-                    >
-                        Delete User
-                    </button>
-                </form>
+        <div class="mt-8 flex justify-end gap-2 border-t border-slate-100 pt-5">
 
-                <div class="flex gap-2">
+            <a
+                href="{{ route('admin.users.show', $user) }}"
+                class="rounded-lg border border-slate-200 px-4 py-2 text-[10px] font-semibold text-slate-600 hover:bg-slate-50"
+            >
+                Cancel
+            </a>
 
-                    <a
-                        href="{{ route('admin.users.show', $user) }}"
-                        class="rounded-lg border border-slate-200 px-4 py-2 text-[10px] font-semibold text-slate-600"
-                    >
-                        Cancel
-                    </a>
+            <button
+                type="submit"
+                class="rounded-lg bg-[#0879b9] px-5 py-2 text-[10px] font-semibold text-white hover:bg-[#076da7]"
+            >
+                Save Changes
+            </button>
 
-                    <button
-                        type="submit"
-                        class="rounded-lg bg-sky-600 px-4 py-2 text-[10px] font-semibold text-white hover:bg-sky-700"
-                    >
-                        Save Changes
-                    </button>
+        </div>
 
-                </div>
+    </form>
 
-            </div>
-
-        </form>
-
-    </div>
 </div>
+
 @endsection

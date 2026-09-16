@@ -1,19 +1,20 @@
-@extends('layouts.admin')
+@extends('admin.layouts.app')
 
-@section('title', 'New User | Admin Panel')
+@section('title', 'Create User')
 
 @section('content')
-<div class="mx-auto max-w-3xl">
 
-    <div class="mb-6">
+<div class="mx-auto max-w-3xl space-y-6">
+
+    <div>
         <a
             href="{{ route('admin.users.index') }}"
-            class="text-[10px] font-semibold text-sky-600"
+            class="text-[10px] font-semibold text-sky-600 hover:text-sky-700"
         >
             ← Back to Users
         </a>
 
-        <h1 class="mt-4 text-2xl font-bold text-slate-800">
+        <h1 class="mt-3 text-2xl font-bold text-slate-800">
             Create New User
         </h1>
 
@@ -22,10 +23,15 @@
         </p>
     </div>
 
-    <div class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+    <form
+        method="POST"
+        action="{{ route('admin.users.store') }}"
+        class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm"
+    >
 
-        <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-5">
-            @csrf
+        @csrf
+
+        <div class="space-y-5">
 
             <div>
                 <label class="text-[10px] font-semibold text-slate-600">
@@ -37,12 +43,14 @@
                     name="name"
                     value="{{ old('name') }}"
                     required
-                    class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-                    placeholder="Enter full name"
+                    class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                    placeholder="Customer name"
                 >
 
                 @error('name')
-                    <p class="mt-1 text-[10px] text-red-500">{{ $message }}</p>
+                    <p class="mt-1 text-[10px] text-red-500">
+                        {{ $message }}
+                    </p>
                 @enderror
             </div>
 
@@ -56,12 +64,14 @@
                     name="email"
                     value="{{ old('email') }}"
                     required
-                    class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                     placeholder="customer@example.com"
                 >
 
                 @error('email')
-                    <p class="mt-1 text-[10px] text-red-500">{{ $message }}</p>
+                    <p class="mt-1 text-[10px] text-red-500">
+                        {{ $message }}
+                    </p>
                 @enderror
             </div>
 
@@ -76,12 +86,13 @@
                         type="password"
                         name="password"
                         required
-                        class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-                        placeholder="Minimum 8 characters"
+                        class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                     >
 
                     @error('password')
-                        <p class="mt-1 text-[10px] text-red-500">{{ $message }}</p>
+                        <p class="mt-1 text-[10px] text-red-500">
+                            {{ $message }}
+                        </p>
                     @enderror
                 </div>
 
@@ -94,32 +105,34 @@
                         type="password"
                         name="password_confirmation"
                         required
-                        class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-xs outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-                        placeholder="Repeat password"
+                        class="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                     >
                 </div>
 
             </div>
 
-            <div class="flex justify-end gap-2 border-t border-slate-100 pt-5">
+        </div>
 
-                <a
-                    href="{{ route('admin.users.index') }}"
-                    class="rounded-lg border border-slate-200 px-4 py-2 text-[10px] font-semibold text-slate-600"
-                >
-                    Cancel
-                </a>
+        <div class="mt-8 flex justify-end gap-2 border-t border-slate-100 pt-5">
 
-                <button
-                    type="submit"
-                    class="rounded-lg bg-sky-600 px-4 py-2 text-[10px] font-semibold text-white hover:bg-sky-700"
-                >
-                    Create User
-                </button>
+            <a
+                href="{{ route('admin.users.index') }}"
+                class="rounded-lg border border-slate-200 px-4 py-2 text-[10px] font-semibold text-slate-600 hover:bg-slate-50"
+            >
+                Cancel
+            </a>
 
-            </div>
-        </form>
+            <button
+                type="submit"
+                class="rounded-lg bg-[#0879b9] px-5 py-2 text-[10px] font-semibold text-white hover:bg-[#076da7]"
+            >
+                Create User
+            </button>
 
-    </div>
+        </div>
+
+    </form>
+
 </div>
+
 @endsection
