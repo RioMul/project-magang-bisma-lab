@@ -1,63 +1,65 @@
-<header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-5 sm:px-7 lg:px-8">
+<header class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-5 sm:px-7 lg:px-8">
 
-    <div class="flex-1 max-w-xl">
-
-        <div class="relative">
-
+    {{-- KIRI: SEARCH BAR --}}
+    <div class="flex-1 max-w-2xl">
+        <div class="relative w-full max-w-lg">
             <svg
-                class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                stroke-width="1.8">
-
-                <circle cx="11" cy="11" r="6"/>
-                <path stroke-linecap="round" d="M16 16l4 4"/>
-
+                stroke-width="2">
+                <circle cx="11" cy="11" r="7"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
             </svg>
 
             <input
                 type="text"
                 placeholder="Search for users or websites..."
-                class="w-full max-w-md pl-9 pr-4 py-2 rounded-lg bg-[#f2f5fa] border-0 text-xs text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-100">
+                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border-0 text-xs sm:text-sm text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-sky-100 transition shadow-sm">
         </div>
-
     </div>
 
-    <div class="flex items-center gap-5">
+    {{-- KANAN: ICONS & PROFILE --}}
+    <div class="flex items-center gap-6 shrink-0">
 
-        <button class="text-slate-500 hover:text-slate-800">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" d="M18 8a6 6 0 00-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                <path stroke-linecap="round" d="M10 21h4"/>
-            </svg>
-        </button>
+        {{-- Ikon Notifikasi & Pengaturan --}}
+        <div class="flex items-center gap-4 text-slate-400">
+            <button class="hover:text-slate-700 transition relative">
+                <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                <span class="absolute top-0 right-0.5 w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+            </button>
 
-        <button class="text-slate-500 hover:text-slate-800">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="12" r="3"/>
-                <path stroke-linecap="round" d="M19.4 15a1.7 1.7 0 000-6l-1-1.7a1.7 1.7 0 00-2.4-.6L14 6a7 7 0 00-4 0L8 6.7a1.7 1.7 0 00-2.4.6l-1 1.7a1.7 1.7 0 000 6l1 1.7a1.7 1.7 0 002.4.6L10 18a7 7 0 004 0l2 1.3a1.7 1.7 0 002.4-.6l1-1.7z"/>
-            </svg>
-        </button>
+            <button class="hover:text-slate-700 transition">
+                <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </button>
+        </div>
 
-        <div class="flex items-center gap-2.5">
+        <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
 
+        {{-- Profil --}}
+        <div class="flex items-center gap-3">
             <div class="text-right hidden sm:block">
-
-                <div class="text-xs font-semibold text-slate-800">
-                    {{ auth()->user()->name }}
+                <div class="text-sm font-bold text-slate-800">
+                    {{ auth()->user()->name ?? 'Alex Rivera' }}
                 </div>
-
-                <div class="text-[8px] font-bold uppercase tracking-wider text-[#0879b9]">
+                <div class="text-[9px] font-bold uppercase tracking-wider text-[#0369a1] mt-0.5">
                     Super Admin
                 </div>
-
             </div>
 
-            <div class="w-9 h-9 rounded-lg bg-[#e3f3fa] flex items-center justify-center text-xs font-bold text-[#0879b9]">
-                AR
-            </div>
-
+            <a href="{{ route('profile.edit') }}" class="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-100 bg-slate-800 hover:border-sky-200 transition shrink-0">
+                @if(auth()->user()->avatar ?? false)
+                    <img src="{{ auth()->user()->avatar }}" alt="Avatar" class="w-full h-full object-cover">
+                @else
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Alex Rivera') }}&background=1e293b&color=fff" alt="Avatar" class="w-full h-full object-cover">
+                @endif
+            </a>
         </div>
 
     </div>
