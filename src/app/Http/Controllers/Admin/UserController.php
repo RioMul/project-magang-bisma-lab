@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Package;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -60,7 +61,11 @@ class UserController extends Controller
                         ->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
                         ->orWhereHas('orders', function ($query) use ($search) {
-                            $query->where('domain_name', 'like', "%{$search}%");
+                            $query->where(
+                                'domain_name',
+                                'like',
+                                "%{$search}%"
+                            );
                         });
                 });
             })
@@ -69,6 +74,7 @@ class UserController extends Controller
 
                 if ($status === 'new') {
                     $query->whereDoesntHave('orders');
+
                     return;
                 }
 
@@ -85,7 +91,7 @@ class UserController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        $packages = \App\Models\Package::query()
+        $packages = Package::query()
             ->orderBy('name')
             ->get();
 
@@ -145,13 +151,84 @@ class UserController extends Controller
         abort_if($user->is_admin, 404);
 
         $user->load([
+            'orders' => function ($query) {
+                $query->latest();
+            },
             'orders.template',
             'orders.package',
             'orders.payment',
             'orders.website',
         ]);
 
-        return view('admin.users.show', compact('user'));
+        $latestOrder = $user->orders->first();
+        $latestPayment = $latestOrder?->payment;
+        $latestWebsite = $latestOrder?->website;
+
+        $status = $latestOrder?->status ?? 'new';
+
+        $statusLabel = match ($status) {
+            'paid' => 'Active',
+            'pending' => 'Pending',
+            'expired' => 'Expired',
+            default => 'New',
+        };
+
+        $statusClass = match ($status) {
+            'paid' => 'bg-emerald-50 text-emerald-600',
+            'pending' => 'bg-amber-50 text-amber-600',
+            'expired' => 'bg-red-50 text-red-500',
+            default => 'bg-sky-50 text-sky-600',
+        };
+
+        $websiteStatus = $latestWebsite?->status;
+
+        $websiteStatusLabel = $websiteStatus
+            ? ucfirst($websiteStatus)
+            : 'Not created';
+
+        $websiteStatusClass = match ($websiteStatus) {
+            'active', 'published' => 'bg-sky-50 text-sky-600',
+            'building', 'pending' => 'bg-amber-50 text-amber-600',
+            'inactive', 'expired' => 'bg-red-50 text-red-500',
+            default => 'bg-slate-100 text-slate-500',
+        };
+
+        $paymentStatus = $latestPayment?->status
+            ?? $latestOrder?->status
+            ?? 'unpaid';
+
+        $paymentStatusLabel = match ($paymentStatus) {
+            'paid' => 'Paid',
+            'pending' => 'Pending',
+            'failed' => 'Failed',
+            'expired' => 'Expired',
+            default => 'Unpaid',
+        };
+
+        $paymentStatusClass = match ($paymentStatus) {
+            'paid' => 'bg-emerald-50 text-emerald-600',
+            'pending' => 'bg-amber-50 text-amber-600',
+            'failed', 'expired' => 'bg-red-50 text-red-500',
+            default => 'bg-slate-100 text-slate-500',
+        };
+
+        $canDelete = $user->orders->isEmpty();
+
+        return view('admin.users.detail_user', compact(
+            'user',
+            'latestOrder',
+            'latestPayment',
+            'latestWebsite',
+            'status',
+            'statusLabel',
+            'statusClass',
+            'websiteStatusLabel',
+            'websiteStatusClass',
+            'paymentStatus',
+            'paymentStatusLabel',
+            'paymentStatusClass',
+            'canDelete'
+        ));
     }
 
     public function edit(User $user)
