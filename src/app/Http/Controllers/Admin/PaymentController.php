@@ -11,36 +11,65 @@ class PaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $payments = Payment::with([
-            'order.user',
-            'order.package',
-        ])
+        $totalInvoices = Payment::count();
+
+        $paidInvoices = Payment::where('status', 'paid')
+            ->count();
+
+        $pendingInvoices = Payment::where('status', 'pending')
+            ->count();
+
+        $failedInvoices = Payment::whereIn('status', [
+            'failed',
+            'expired',
+        ])->count();
+
+        $totalRevenue = Payment::where('status', 'paid')
+            ->sum('amount_paid');
+
+        $payments = Payment::query()
+            ->with([
+                'order.user',
+                'order.package',
+                'order.website',
+            ])
             ->when(
-                $request->search,
-                function ($query, $search) {
-                    $query->whereHas(
-                        'order',
-                        function ($query) use ($search) {
+                $request->filled('search'),
+                function ($query) use ($request) {
+                    $search = $request->input('search');
+
+                    $query->whereHas('order', function ($query) use ($search) {
+                        $query->where(function ($query) use ($search) {
                             $query
                                 ->where('order_number', 'like', "%{$search}%")
                                 ->orWhere('customer_name', 'like', "%{$search}%")
-                                ->orWhere('customer_email', 'like', "%{$search}%");
-                        }
-                    );
+                                ->orWhere('customer_email', 'like', "%{$search}%")
+                                ->orWhere('domain_name', 'like', "%{$search}%");
+                        });
+                    });
                 }
             )
             ->when(
-                $request->status,
-                fn ($query, $status) => $query->where(
-                    'status',
-                    $status
-                )
+                $request->filled('status'),
+                function ($query) use ($request) {
+                    $query->where(
+                        'status',
+                        $request->input('status')
+                    );
+                }
             )
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.billing.index', compact('payments'));
+        return view('admin.billing.index', compact(
+            'payments',
+            'totalInvoices',
+            'paidInvoices',
+            'pendingInvoices',
+            'failedInvoices',
+            'totalRevenue'
+        ));
     }
 
     public function updateStatus(
@@ -60,22 +89,16 @@ class PaymentController extends Controller
                 'status' => $validated['status'],
             ]);
 
-            if ($validated['status'] === 'paid') {
-                $payment->order()->update([
-                    'status' => 'paid',
-                ]);
-            }
+            $orderStatus = match ($validated['status']) {
+                'paid' => 'paid',
+                'failed' => 'failed',
+                'expired' => 'expired',
+                default => 'pending',
+            };
 
-            if (
-                in_array(
-                    $validated['status'],
-                    ['failed', 'expired']
-                )
-            ) {
-                $payment->order()->update([
-                    'status' => $validated['status'],
-                ]);
-            }
+            $payment->order()->update([
+                'status' => $orderStatus,
+            ]);
         });
 
         return back()->with(
