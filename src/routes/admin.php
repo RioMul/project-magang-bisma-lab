@@ -108,5 +108,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/websites', [WebsiteController::class, 'index'])
             ->name('websites.index');
+
+        Route::put('/websites', [WebsiteController::class, 'update'])
+            ->name('websites.update');
     });
 });
