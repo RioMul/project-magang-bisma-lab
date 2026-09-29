@@ -1,279 +1,838 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atelier Editor | Bisma Labs</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ $website['header']['site_name'] ?? 'Website Editor' }}
+        | Bisma Labs
+    </title>
+
+    @vite([
+        'resources/css/app.css',
+        'resources/js/app.js'
+    ])
+
     <style>
-        [x-cloak] { display: none !important; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 5px;
+        }
     </style>
+
 </head>
-<body 
-    class="bg-white text-slate-800 antialiased h-screen flex flex-col overflow-hidden font-sans"
-    x-data="atelierEditor()"
+
+<body
+    class="bg-white text-slate-800 antialiased h-screen flex flex-col overflow-hidden"
+    x-data="websiteEditor()"
 >
 
-    {{-- TOP NAVBAR --}}
-    <header class="h-[72px] bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 relative z-20">
-        <div class="flex items-center gap-14 h-full">
-            {{-- Logo --}}
-            <div class="text-xl font-extrabold tracking-tight text-slate-900">
-                Bisma Labs
+<header class="h-[68px] bg-white border-b border-slate-200 flex items-center justify-between px-5 lg:px-8 shrink-0 z-30">
+
+    <div class="flex items-center gap-8 h-full min-w-0">
+
+        <a
+            href="{{ route('dashboard') }}"
+            class="font-extrabold text-slate-900 text-lg whitespace-nowrap"
+        >
+            Bisma Labs
+        </a>
+
+        <nav class="hidden md:flex items-center gap-7 h-full">
+
+            <button
+                type="button"
+                @click="activeTab = 'editor'"
+                :class="activeTab === 'editor'
+                    ? 'text-[#0369a1] border-b-2 border-[#0369a1]'
+                    : 'text-slate-400 hover:text-slate-700'"
+                class="h-full text-xs font-bold transition"
+            >
+                Editor
+            </button>
+
+            <button
+                type="button"
+                @click="activeTab = 'seo'"
+                :class="activeTab === 'seo'
+                    ? 'text-[#0369a1] border-b-2 border-[#0369a1]'
+                    : 'text-slate-400 hover:text-slate-700'"
+                class="h-full text-xs font-bold transition"
+            >
+                SEO
+            </button>
+
+            <button
+                type="button"
+                @click="activeTab = 'domain'"
+                :class="activeTab === 'domain'
+                    ? 'text-[#0369a1] border-b-2 border-[#0369a1]'
+                    : 'text-slate-400 hover:text-slate-700'"
+                class="h-full text-xs font-bold transition"
+            >
+                Domain
+            </button>
+
+        </nav>
+
+    </div>
+
+    <div class="flex items-center gap-2 sm:gap-5">
+
+        <a
+            href="{{ route('client.website.preview') }}"
+            target="_blank"
+            class="hidden sm:block text-xs font-bold text-slate-500 hover:text-slate-900 transition"
+        >
+            Preview Website
+        </a>
+
+        <button
+            type="submit"
+            form="website-editor-form"
+            class="px-5 sm:px-7 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold transition"
+        >
+            Save
+        </button>
+
+    </div>
+
+</header>
+
+<main class="flex-1 flex overflow-hidden">
+
+    <aside class="hidden md:flex w-56 bg-white border-r border-slate-100 flex-col justify-between py-7 px-4 shrink-0">
+
+        <div>
+
+            <div class="px-2 mb-7">
+
+                <h2 class="text-sm font-bold text-slate-800">
+                    Atelier Editor
+                </h2>
+
+                <p class="text-[10px] text-slate-400 mt-1">
+                    {{ $website['header']['site_name'] ?? 'Site Settings' }}
+                </p>
+
             </div>
 
-            {{-- Tabs Control --}}
-            <nav class="flex items-center h-full gap-8 text-sm font-semibold text-slate-400">
-                <button 
-                    @click="activeTab = 'editor'" 
-                    :class="activeTab === 'editor' ? 'text-[#0369a1] border-b-2 border-[#0369a1]' : 'hover:text-slate-600'" 
-                    class="h-full flex items-center px-1 transition-colors">
-                    Editor
-                </button>
-                <button 
-                    @click="activeTab = 'seo'" 
-                    :class="activeTab === 'seo' ? 'text-[#0369a1] border-b-2 border-[#0369a1]' : 'hover:text-slate-600'" 
-                    class="h-full flex items-center px-1 transition-colors">
-                    SEO
-                </button>
-                <button 
-                    @click="activeTab = 'domain'" 
-                    :class="activeTab === 'domain' ? 'text-[#0369a1] border-b-2 border-[#0369a1]' : 'hover:text-slate-600'" 
-                    class="h-full flex items-center px-1 transition-colors">
-                    Domain
-                </button>
+            <nav
+                class="space-y-1"
+                x-show="activeTab === 'editor'"
+                x-cloak
+            >
+
+                @foreach([
+                    'header' => 'Header',
+                    'body' => 'Body',
+                    'sidebar' => 'Sidebar',
+                    'footer' => 'Footer'
+                ] as $key => $label)
+
+                    <button
+                        type="button"
+                        @click="activeSection = '{{ $key }}'"
+                        :class="activeSection === '{{ $key }}'
+                            ? 'bg-sky-50 text-[#0369a1] border border-sky-100'
+                            : 'text-slate-500 hover:bg-slate-50 border border-transparent'"
+                        class="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition"
+                    >
+                        {{ $label }}
+                    </button>
+
+                @endforeach
+
             </nav>
+
         </div>
 
-        <div class="flex items-center gap-6">
-            <button class="text-sm font-bold text-slate-500 hover:text-slate-800 transition">
-                Preview Website
-            </button>
-            <button type="submit" form="editor-form" class="px-7 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-sm font-bold transition shadow-sm">
-                Save
-            </button>
-        </div>
-    </header>
+        <div class="space-y-3">
 
-    {{-- MAIN AREA --}}
-    <main class="flex-1 flex overflow-hidden">
-        
-        {{-- LEFT SIDEBAR (Menu Section) --}}
-        <aside class="w-56 bg-white border-r border-slate-100 flex flex-col justify-between py-8 px-5 shrink-0 z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-            <div>
-                <div class="mb-8 px-2">
-                    <h2 class="text-sm font-bold text-slate-800">Atelier Editor</h2>
-                    <p class="text-[10px] font-medium text-slate-400 mt-0.5">Site Settings</p>
+            <a
+                href="{{ route('dashboard') }}"
+                class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold transition"
+            >
+
+                <svg
+                    class="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                    />
+                </svg>
+
+                Kembali
+
+            </a>
+
+            <div class="flex justify-center">
+
+                <button
+                    type="button"
+                    class="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-500"
+                >
+                    ?
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+    <div class="md:hidden absolute top-[82px] left-3 z-20">
+
+        <select
+            x-model="activeSection"
+            class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold shadow-sm"
+        >
+            <option value="header">Header</option>
+            <option value="body">Body</option>
+            <option value="sidebar">Sidebar</option>
+            <option value="footer">Footer</option>
+        </select>
+
+    </div>
+
+    <div class="w-full lg:w-[430px] bg-slate-50 border-r border-slate-100 overflow-y-auto custom-scrollbar shrink-0">
+
+        <form
+            id="website-editor-form"
+            method="POST"
+            action="{{ route('client.website.update') }}"
+            enctype="multipart/form-data"
+            class="p-5 sm:p-7 lg:p-8"
+        >
+
+            @csrf
+            @method('PUT')
+
+            <input
+                type="hidden"
+                name="tab"
+                :value="activeTab"
+            >
+
+            <input
+                type="hidden"
+                name="section"
+                :value="activeSection"
+            >
+
+            @if(session('success'))
+
+                <div class="mb-5 rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3 text-xs font-semibold text-emerald-700">
+                    {{ session('success') }}
                 </div>
 
-                <nav class="space-y-1.5" x-show="activeTab === 'editor'">
-                    <button @click="activeMenu = 'header'" :class="activeMenu === 'header' ? 'bg-sky-50 text-[#0369a1] font-bold border border-sky-100' : 'text-slate-500 hover:bg-slate-50 font-semibold border border-transparent'" class="w-full flex items-center px-4 py-2.5 rounded-xl text-xs transition text-left">
-                        Header
-                    </button>
-                    <button @click="activeMenu = 'body'" :class="activeMenu === 'body' ? 'bg-sky-50 text-[#0369a1] font-bold border border-sky-100' : 'text-slate-500 hover:bg-slate-50 font-semibold border border-transparent'" class="w-full flex items-center px-4 py-2.5 rounded-xl text-xs transition text-left">
-                        Body
-                    </button>
-                    <button @click="activeMenu = 'sidebar'" :class="activeMenu === 'sidebar' ? 'bg-sky-50 text-[#0369a1] font-bold border border-sky-100' : 'text-slate-500 hover:bg-slate-50 font-semibold border border-transparent'" class="w-full flex items-center px-4 py-2.5 rounded-xl text-xs transition text-left">
-                        Sidebar
-                    </button>
-                    <button @click="activeMenu = 'footer'" :class="activeMenu === 'footer' ? 'bg-sky-50 text-[#0369a1] font-bold border border-sky-100' : 'text-slate-500 hover:bg-slate-50 font-semibold border border-transparent'" class="w-full flex items-center px-4 py-2.5 rounded-xl text-xs transition text-left">
-                        Footer
-                    </button>
-                </nav>
+            @endif
+
+            @if($errors->any())
+
+                <div class="mb-5 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-xs text-red-600">
+
+                    @foreach($errors->all() as $error)
+
+                        <div>
+                            {{ $error }}
+                        </div>
+
+                    @endforeach
+
+                </div>
+
+            @endif
+
+            <div
+                x-show="activeTab === 'editor' && activeSection === 'header'"
+                x-cloak
+            >
+
+                <h2 class="text-xl font-bold text-slate-800">
+                    Header Settings
+                </h2>
+
+                <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
+                    Atur identitas dan navigasi utama website.
+                </p>
+
+                <div class="space-y-5 mt-7">
+
+                    <div>
+
+                        <label class="field-label">
+                            Business Name
+                        </label>
+
+                        <input
+                            type="text"
+                            name="site_name"
+                            value="{{ old('site_name', $website['header']['site_name'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Logo Text
+                        </label>
+
+                        <input
+                            type="text"
+                            name="logo_text"
+                            value="{{ old('logo_text', $website['header']['logo_text'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Badge
+                        </label>
+
+                        <input
+                            type="text"
+                            name="badge"
+                            value="{{ old('badge', $website['header']['badge'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Button Text
+                        </label>
+
+                        <input
+                            type="text"
+                            name="button_text"
+                            value="{{ old('button_text', $website['header']['button_text'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <div class="space-y-4 px-2">
-                <a href="{{ route('dashboard') }}" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#075985] text-white text-xs font-bold transition shadow-sm">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                    Kembali
-                </a>
-                <button class="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-[#0369a1] hover:bg-sky-50 transition shadow-sm">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </button>
-            </div>
-        </aside>
+            <div
+                x-show="activeTab === 'editor' && activeSection === 'body'"
+                x-cloak
+            >
 
-        {{-- MIDDLE COLUMN (Settings Form) --}}
-        <div class="w-[420px] bg-slate-50/50 border-r border-slate-100 overflow-y-auto shrink-0 custom-scrollbar">
-            <form id="editor-form" method="POST" action="{{ route('client.website.update') }}" class="p-8 space-y-6">
-                @csrf
-                @method('PUT')
+                <h2 class="text-xl font-bold text-slate-800">
+                    Body Settings
+                </h2>
 
-                {{-- PANEL EDITOR: GENERAL SETTINGS --}}
-                <div x-show="activeTab === 'editor'" x-transition.opacity>
-                    <div class="mb-8">
-                        <h2 class="text-xl font-bold text-slate-800 tracking-tight">General Settings</h2>
-                        <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
-                            Customize your basic business information. Changes will reflect in the live preview instantly.
+                <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
+                    Kelola konten utama, hero section, promo dan warna template.
+                </p>
+
+                <div class="space-y-5 mt-7">
+
+                    <div>
+
+                        <label class="field-label">
+                            Hero Title
+                        </label>
+
+                        <textarea
+                            name="hero_title"
+                            rows="3"
+                            class="field-input resize-none"
+                        >{{ old('hero_title', $website['body']['hero_title'] ?? '') }}</textarea>
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Highlight
+                        </label>
+
+                        <input
+                            type="text"
+                            name="hero_highlight"
+                            value="{{ old('hero_highlight', $website['body']['hero_highlight'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Description
+                        </label>
+
+                        <textarea
+                            name="hero_description"
+                            rows="5"
+                            class="field-input resize-none"
+                        >{{ old('hero_description', $website['body']['hero_description'] ?? '') }}</textarea>
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Button Text
+                        </label>
+
+                        <input
+                            type="text"
+                            name="button_text"
+                            value="{{ old('button_text', $website['body']['button_text'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Promo Title
+                        </label>
+
+                        <input
+                            type="text"
+                            name="promo_title"
+                            value="{{ old('promo_title', $website['body']['promo_title'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Promo Description
+                        </label>
+
+                        <textarea
+                            name="promo_description"
+                            rows="4"
+                            class="field-input resize-none"
+                        >{{ old('promo_description', $website['body']['promo_description'] ?? '') }}</textarea>
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Theme Color
+                        </label>
+
+                        <div class="flex gap-3">
+
+                            <input
+                                type="color"
+                                name="theme_primary"
+                                value="{{ $website['style']['primary'] ?? '#0369a1' }}"
+                                class="w-14 h-11 rounded-xl border border-slate-200 bg-white p-1"
+                            >
+
+                            <input
+                                type="text"
+                                value="{{ $website['style']['primary'] ?? '#0369a1' }}"
+                                readonly
+                                class="field-input flex-1"
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Hero Image
+                        </label>
+
+                        <input
+                            type="file"
+                            name="hero_image"
+                            accept="image/*"
+                            class="w-full text-xs text-slate-500"
+                        >
+
+                        <p class="text-[10px] text-slate-400 mt-2">
+                            JPG, PNG, WebP. Maksimal 4MB.
                         </p>
+
                     </div>
 
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-2">Business Name</label>
-                            <input type="text" name="business_name" x-model="formData.business_name" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 outline-none focus:border-[#0369a1] focus:ring-2 focus:ring-sky-50 transition shadow-sm">
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-2">Description</label>
-                            <textarea name="description" x-model="formData.description" rows="5" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-600 outline-none focus:border-[#0369a1] focus:ring-2 focus:ring-sky-50 transition shadow-sm resize-none leading-relaxed"></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-2">Phone Number</label>
-                            <div class="relative">
-                                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                                <input type="text" name="phone" x-model="formData.phone" class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-500 outline-none focus:border-[#0369a1] focus:ring-2 focus:ring-sky-50 transition shadow-sm">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-2">Business Address</label>
-                            <textarea name="address" x-model="formData.address" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-500 outline-none focus:border-[#0369a1] focus:ring-2 focus:ring-sky-50 transition shadow-sm resize-none leading-relaxed"></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-2">Upload Images</label>
-                            <div class="w-full border-2 border-dashed border-slate-200 rounded-2xl bg-white p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 transition">
-                                <div class="w-10 h-10 rounded-full bg-sky-50 text-[#0369a1] flex items-center justify-center mb-3">
-                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4m-4-5l-4-4m0 0L8 11m4-4v12"/></svg>
-                                </div>
-                                <span class="text-[11px] font-bold text-slate-800">Drag and drop images</span>
-                                <span class="text-[9px] font-medium text-slate-400 mt-1">JPG, PNG, or WebP up to 10MB</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                {{-- PANEL SEO SETTINGS --}}
-                <div x-show="activeTab === 'seo'" x-cloak x-transition.opacity>
-                    <div class="mb-8">
-                        <h2 class="text-xl font-bold text-slate-800 tracking-tight">SEO Configuration</h2>
-                        <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
-                            Optimize your page to rank better on search engines.
-                        </p>
-                    </div>
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-2">URL Slug</label>
-                            <div class="flex">
-                                <span class="flex items-center px-3 bg-slate-100 border border-r-0 border-slate-200 rounded-l-xl text-xs text-slate-400 font-semibold">/pages/</span>
-                                <input type="text" name="slug" value="home" class="flex-1 px-4 py-3 border border-slate-200 rounded-r-xl text-xs text-slate-700 font-semibold focus:border-[#0369a1] focus:ring-2 focus:ring-sky-50 outline-none transition">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-2">Meta Title</label>
-                            <input type="text" name="meta_title" x-model="formData.business_name" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 outline-none focus:border-[#0369a1] focus:ring-2 focus:ring-sky-50 transition shadow-sm">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-2">Meta Description</label>
-                            <textarea name="meta_description" x-model="formData.description" rows="4" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-600 outline-none focus:border-[#0369a1] focus:ring-2 focus:ring-sky-50 transition shadow-sm resize-none"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-            </form>
-        </div>
-
-        {{-- RIGHT COLUMN (Live Preview Area) --}}
-        <div class="flex-1 bg-[#f1f5f9] flex flex-col items-center justify-center relative overflow-hidden p-8">
-            
-            {{-- Mockup Browser Wrapper --}}
-            <div class="w-full max-w-[800px] bg-white rounded-t-2xl rounded-b-3xl shadow-xl flex flex-col h-full max-h-[820px] border border-slate-200 overflow-hidden transform transition-all duration-300">
-                
-                {{-- Mockup Header (Browser Bar) --}}
-                <div class="h-12 bg-white border-b border-slate-100 flex items-center px-4 gap-4 shrink-0">
-                    <div class="flex items-center gap-1.5">
-                        <div class="w-3 h-3 rounded-full bg-rose-400"></div>
-                        <div class="w-3 h-3 rounded-full bg-amber-300"></div>
-                        <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
-                    </div>
-                    <div class="flex-1 flex justify-center">
-                        <div class="px-6 py-1.5 rounded-full bg-slate-50 border border-slate-100 text-[9px] font-bold text-slate-400 tracking-wider">
-                            www.bismalabs.atelier.com
-                        </div>
-                    </div>
-                    <div class="w-12"></div>
-                </div>
-
-                {{-- LIVE TEMPLATE CONTENT (Reactive to x-model) --}}
-                <div class="flex-1 bg-white flex flex-col overflow-y-auto custom-scrollbar relative">
-                    
-                    {{-- Nav --}}
-                    <div class="flex items-center justify-between px-10 py-10 shrink-0">
-                        {{-- Data Binding: Business Name --}}
-                        <div x-text="formData.business_name" class="text-sm font-black text-slate-900 tracking-tight uppercase"></div>
-                        
-                        <div class="flex gap-6 text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                            <span class="text-[#0369a1] border-b-2 border-[#0369a1] pb-1.5">Home</span>
-                            <span class="hover:text-slate-800 cursor-pointer pb-1.5 transition">Portfolio</span>
-                            <span class="hover:text-slate-800 cursor-pointer pb-1.5 transition">Contact</span>
-                        </div>
-                    </div>
-
-                    {{-- Hero Section --}}
-                    <div class="flex-1 flex items-center px-10 pb-10 gap-8">
-                        <div class="flex-1 pr-2 relative z-10">
-                            {{-- Dekorasi Glow Halus di Teks --}}
-                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-emerald-50 rounded-full blur-3xl opacity-60 -z-10"></div>
-                            
-                            <h1 class="text-5xl font-black text-slate-900 leading-[1.1] tracking-tight mb-6">
-                                Crafting<br>Digital<br><span class="text-[#0369a1]">Elegance</span><br>for Your<br>Brand.
-                            </h1>
-                            
-                            {{-- Data Binding: Description --}}
-                            <p x-text="formData.description" class="text-xs text-slate-500 leading-relaxed max-w-sm mb-8 font-medium"></p>
-                            
-                            <div class="flex gap-3">
-                                <button class="px-6 py-3 rounded-xl bg-[#0369a1] text-white text-[10px] font-bold shadow-md hover:bg-[#075985] transition">Get Started</button>
-                                <button class="px-6 py-3 rounded-xl bg-slate-100 text-slate-600 text-[10px] font-bold hover:bg-slate-200 transition">Our Work</button>
-                            </div>
-                        </div>
-                        
-                        {{-- Image Mockup Area --}}
-                        <div class="w-[280px] h-full max-h-[520px] rounded-[32px] relative overflow-hidden shadow-inner shrink-0 bg-[#83a4a7]">
-                             {{-- Menggunakan Unsplash Image sebagai placeholder Vas Estetik yang mirip dengan desain asli --}}
-                             <img src="https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover mix-blend-multiply opacity-90" alt="Vase Mockup">
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            {{-- View Toggles (Mockup Controls) --}}
-            <div class="absolute bottom-5 flex items-center gap-6 text-[10px] font-bold text-slate-500">
-                <button class="flex items-center gap-1.5 hover:text-slate-800 transition">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path stroke-linecap="round" d="M12 18h.01"/></svg>
-                    Mobile View
-                </button>
-                <button class="flex items-center gap-1.5 text-[#0369a1] transition">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path stroke-linecap="round" d="M8 22h8m-4-4v4"/></svg>
-                    Desktop View
-                </button>
-            </div>
-            
-        </div>
-    </main>
+            <div
+                x-show="activeTab === 'editor' && activeSection === 'sidebar'"
+                x-cloak
+            >
 
-    {{-- ALPINE.JS SCRIPT UNTUK DATA BINDING --}}
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('atelierEditor', () => ({
-                activeTab: 'editor',
-                activeMenu: 'header',
-                // Data awal diambil dari Controller ($websiteData)
-                formData: {
-                    business_name: '{!! addslashes($websiteData["business_name"] ?? "Bisma Labs") !!}',
-                    description: '{!! addslashes($websiteData["description"] ?? "We build premium digital experiences for local artisans and craftsmens. Our atelier approach ensures every pixel is intentional.") !!}',
-                    phone: '{!! addslashes($websiteData["phone"] ?? "") !!}',
-                    address: '{!! addslashes($websiteData["address"] ?? "") !!}'
-                }
-            }))
-        })
-    </script>
+                <h2 class="text-xl font-bold text-slate-800">
+                    Sidebar Settings
+                </h2>
+
+                <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
+                    Atur informasi kontak dan kanal komunikasi bisnis.
+                </p>
+
+                <div class="space-y-5 mt-7">
+
+                    <div>
+
+                        <label class="field-label">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="text"
+                            name="phone"
+                            value="{{ old('phone', $website['sidebar']['phone'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Business Address
+                        </label>
+
+                        <textarea
+                            name="address"
+                            rows="4"
+                            class="field-input resize-none"
+                        >{{ old('address', $website['sidebar']['address'] ?? '') }}</textarea>
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            WhatsApp
+                        </label>
+
+                        <input
+                            type="text"
+                            name="whatsapp"
+                            value="{{ old('whatsapp', $website['sidebar']['whatsapp'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            WhatsApp Message
+                        </label>
+
+                        <textarea
+                            name="whatsapp_message"
+                            rows="3"
+                            class="field-input resize-none"
+                        >{{ old('whatsapp_message', $website['sidebar']['whatsapp_message'] ?? '') }}</textarea>
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Instagram
+                        </label>
+
+                        <input
+                            type="text"
+                            name="social_instagram"
+                            value="{{ old('social_instagram', $website['sidebar']['social_instagram'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div
+                x-show="activeTab === 'editor' && activeSection === 'footer'"
+                x-cloak
+            >
+
+                <h2 class="text-xl font-bold text-slate-800">
+                    Footer Settings
+                </h2>
+
+                <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
+                    Atur informasi bagian bawah website.
+                </p>
+
+                <div class="space-y-5 mt-7">
+
+                    <div>
+
+                        <label class="field-label">
+                            Footer Description
+                        </label>
+
+                        <textarea
+                            name="footer_description"
+                            rows="5"
+                            class="field-input resize-none"
+                        >{{ old('footer_description', $website['footer']['description'] ?? '') }}</textarea>
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Copyright
+                        </label>
+
+                        <input
+                            type="text"
+                            name="copyright"
+                            value="{{ old('copyright', $website['footer']['copyright'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div
+                x-show="activeTab === 'seo'"
+                x-cloak
+            >
+
+                <h2 class="text-xl font-bold text-slate-800">
+                    SEO Configuration
+                </h2>
+
+                <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
+                    Kelola informasi SEO website Anda.
+                </p>
+
+                <div class="space-y-5 mt-7">
+
+                    <div>
+
+                        <label class="field-label">
+                            Meta Title
+                        </label>
+
+                        <input
+                            type="text"
+                            name="seo_title"
+                            value="{{ old('seo_title', $website['seo']['title'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Meta Description
+                        </label>
+
+                        <textarea
+                            name="seo_description"
+                            rows="5"
+                            class="field-input resize-none"
+                        >{{ old('seo_description', $website['seo']['description'] ?? '') }}</textarea>
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Keywords
+                        </label>
+
+                        <textarea
+                            name="seo_keywords"
+                            rows="4"
+                            class="field-input resize-none"
+                        >{{ old('seo_keywords', $website['seo']['keywords'] ?? '') }}</textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div
+                x-show="activeTab === 'domain'"
+                x-cloak
+            >
+
+                <h2 class="text-xl font-bold text-slate-800">
+                    Domain Settings
+                </h2>
+
+                <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">
+                    Domain yang digunakan oleh website Anda.
+                </p>
+
+                <div class="space-y-5 mt-7">
+
+                    <div>
+
+                        <label class="field-label">
+                            Domain Name
+                        </label>
+
+                        <input
+                            type="text"
+                            name="domain_name"
+                            value="{{ old('domain_name', $website['domain']['name'] ?? '') }}"
+                            class="field-input"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label class="field-label">
+                            Connection Status
+                        </label>
+
+                        <div class="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100 text-xs font-bold text-emerald-600">
+                            {{ $website['domain']['status'] ?? 'Not Connected' }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <section class="flex-1 bg-slate-100 overflow-hidden p-3 sm:p-5 lg:p-7">
+
+        <div class="h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+
+            <div class="h-11 border-b border-slate-100 flex items-center px-4 gap-3 shrink-0">
+
+                <div class="flex gap-1.5">
+
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-300"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-yellow-300"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-300"></span>
+
+                </div>
+
+                <div class="flex-1 flex justify-center">
+
+                    <div class="bg-slate-50 border border-slate-100 rounded-full px-6 py-1.5 text-[9px] font-bold text-slate-400">
+                        {{ $website['domain']['name'] ?? 'yourwebsite.com' }}
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="flex-1 overflow-hidden bg-white">
+
+                <iframe
+                    src="{{ route('client.website.preview') }}"
+                    class="w-full h-full border-0"
+                    title="Website Preview"
+                ></iframe>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<style>
+    .field-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    .field-input {
+        width: 100%;
+        padding: 11px 14px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        font-size: 12px;
+        font-weight: 600;
+        color: #475569;
+        outline: none;
+        transition: .2s;
+    }
+
+    .field-input:focus {
+        border-color: #0369a1;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, .08);
+    }
+</style>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+
+        Alpine.data('websiteEditor', () => ({
+
+            activeTab: @js($tab),
+
+            activeSection: @js($section),
+
+        }));
+
+    });
+</script>
+
 </body>
 </html>

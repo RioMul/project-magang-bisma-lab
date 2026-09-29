@@ -8,18 +8,43 @@ use App\Http\Controllers\Client\BillingController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
 
     Route::prefix('client')->name('client.')->group(function () {
-        Route::get('/website/edit', [WebsiteController::class, 'edit'])->name('website.edit');
-        Route::put('/website', [WebsiteController::class, 'update'])->name('website.update');
-        // Route untuk iframe Live Preview
-        Route::get('/website/preview', [WebsiteController::class, 'preview'])->name('website.preview');
+        Route::get(
+            '/website/edit',
+            [WebsiteController::class, 'edit']
+        )->name('website.edit');
 
-        Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
-        Route::get('/pages/{id}/edit', [PageController::class, 'edit'])->name('pages.edit');
+        Route::put(
+            '/website',
+            [WebsiteController::class, 'update']
+        )->name('website.update');
 
-        Route::get('/statistics', [StatisticController::class, 'index'])->name('statistics.index');
-        Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+        Route::get(
+            '/website/preview',
+            [WebsiteController::class, 'preview']
+        )->name('website.preview');
+
+        Route::get(
+            '/pages',
+            [PageController::class, 'index']
+        )->name('pages.index');
+
+        Route::get(
+            '/pages/{id}/edit',
+            [PageController::class, 'edit']
+        )->name('pages.edit');
+
+        Route::get(
+            '/statistics',
+            [StatisticController::class, 'index']
+        )->name('statistics.index');
+
+        Route::get(
+            '/billing',
+            [BillingController::class, 'index']
+        )->name('billing.index');
     });
 });

@@ -1,0 +1,117 @@
+{
+    "editor_available": true,
+    "layout": "shop",
+    "name": "Nexus Corporate",
+    "header": {
+        "site_name": "Nexus Store",
+        "logo_text": "NEXUS",
+        "badge": "OFFICIAL STORE",
+        "menu": [
+            "Home",
+            "Products",
+            "Categories",
+            "Promo",
+            "Contact"
+        ],
+        "button_text": "Login"
+    },
+    "body": {
+        "hero_title": "Belanja Lebih Mudah, Pilihan Lebih Banyak",
+        "hero_highlight": "Nexus Store",
+        "hero_description": "Temukan berbagai produk pilihan dengan harga terbaik dan pengalaman belanja yang sederhana.",
+        "hero_image": "tech1.png",
+        "button_text": "Belanja Sekarang",
+        "categories": [
+            "Elektronik",
+            "Fashion",
+            "Lifestyle",
+            "Aksesoris",
+            "Rumah Tangga"
+        ],
+        "promo_title": "Promo Pilihan Minggu Ini",
+        "promo_description": "Dapatkan penawaran khusus untuk produk pilihan Nexus Store.",
+        "products": [
+            {
+                "name": "Wireless Headphone Pro",
+                "price": 299000,
+                "old_price": 399000,
+                "rating": 4.9,
+                "sold": 128,
+                "image": "tech2.png"
+            },
+            {
+                "name": "Smart Watch Active",
+                "price": 459000,
+                "old_price": 599000,
+                "rating": 4.8,
+                "sold": 96,
+                "image": "tech3.png"
+            },
+            {
+                "name": "Premium Backpack",
+                "price": 249000,
+                "old_price": 329000,
+                "rating": 4.9,
+                "sold": 74,
+                "image": "tech4.png"
+            },
+            {
+                "name": "Minimal Desk Lamp",
+                "price": 179000,
+                "old_price": 229000,
+                "rating": 4.7,
+                "sold": 51,
+                "image": "tech5.png"
+            },
+            {
+                "name": "Urban Sneakers",
+                "price": 399000,
+                "old_price": 499000,
+                "rating": 4.8,
+                "sold": 143,
+                "image": "tech6.png"
+            },
+            {
+                "name": "Everyday Tumbler",
+                "price": 129000,
+                "old_price": 169000,
+                "rating": 4.9,
+                "sold": 87,
+                "image": "tech7.png"
+            }
+        ]
+    },
+    "sidebar": {
+        "phone": "+62 812-3456-7890",
+        "address": "Jakarta, Indonesia",
+        "whatsapp": "6281234567890",
+        "whatsapp_message": "Halo Nexus Store, saya ingin bertanya tentang produk.",
+        "social_instagram": "@nexusstore"
+    },
+    "footer": {
+        "description": "Nexus Store menyediakan berbagai produk pilihan untuk kebutuhan sehari-hari.",
+        "links": [
+            "Tentang Kami",
+            "Bantuan",
+            "Kebijakan Privasi",
+            "Syarat & Ketentuan"
+        ],
+        "copyright": "© 2026 Nexus Store. All rights reserved."
+    },
+    "seo": {
+        "title": "Nexus Store — Belanja Produk Pilihan",
+        "description": "Temukan berbagai produk pilihan dengan harga terbaik di Nexus Store.",
+        "keywords": "nexus store, toko online, ecommerce, produk pilihan",
+        "og_image": "tech1.png"
+    },
+    "domain": {
+        "name": "nexusstore.com",
+        "status": "Connected"
+    },
+    "style": {
+        "primary": "#ee4d2d",
+        "secondary": "#fff1ed",
+        "background": "#f5f5f5",
+        "text": "#1e293b"
+    }
+}

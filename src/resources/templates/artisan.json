@@ -1,0 +1,117 @@
+{
+    "editor_available": true,
+    "layout": "bakery",
+    "name": "Artisan Bakehouse",
+    "header": {
+        "site_name": "Artisan Bakehouse",
+        "logo_text": "ARTISAN",
+        "badge": "FRESH EVERY DAY",
+        "menu": [
+            "Home",
+            "Menu",
+            "About",
+            "Gallery",
+            "Contact"
+        ],
+        "button_text": "Order Now"
+    },
+    "body": {
+        "hero_title": "Freshly Baked For Your Special Moments",
+        "hero_highlight": "Made With Love",
+        "hero_description": "Roti, pastry, dan kue premium yang dibuat setiap hari menggunakan bahan pilihan.",
+        "hero_image": "tech2.png",
+        "button_text": "Lihat Menu",
+        "categories": [
+            "Bread",
+            "Pastry",
+            "Cake",
+            "Cookies",
+            "Coffee"
+        ],
+        "promo_title": "Today's Special",
+        "promo_description": "Nikmati pilihan bakery terbaik kami dengan harga spesial.",
+        "products": [
+            {
+                "name": "Classic Croissant",
+                "price": 28000,
+                "old_price": 35000,
+                "rating": 4.9,
+                "sold": 83,
+                "image": "tech3.png"
+            },
+            {
+                "name": "Chocolate Danish",
+                "price": 32000,
+                "old_price": 40000,
+                "rating": 4.8,
+                "sold": 62,
+                "image": "tech4.png"
+            },
+            {
+                "name": "Strawberry Cake",
+                "price": 185000,
+                "old_price": 220000,
+                "rating": 4.9,
+                "sold": 31,
+                "image": "tech5.png"
+            },
+            {
+                "name": "Butter Cookies",
+                "price": 55000,
+                "old_price": 65000,
+                "rating": 4.7,
+                "sold": 45,
+                "image": "tech6.png"
+            },
+            {
+                "name": "Cinnamon Roll",
+                "price": 30000,
+                "old_price": 38000,
+                "rating": 4.8,
+                "sold": 57,
+                "image": "tech7.png"
+            },
+            {
+                "name": "Iced Latte",
+                "price": 29000,
+                "old_price": 35000,
+                "rating": 4.8,
+                "sold": 91,
+                "image": "tech8.png"
+            }
+        ]
+    },
+    "sidebar": {
+        "phone": "+62 813-4567-8901",
+        "address": "Surakarta, Indonesia",
+        "whatsapp": "6281345678901",
+        "whatsapp_message": "Halo Artisan Bakehouse, saya ingin memesan.",
+        "social_instagram": "@artisanbakehouse"
+    },
+    "footer": {
+        "description": "Artisan Bakehouse menghadirkan bakery premium yang dibuat fresh setiap hari.",
+        "links": [
+            "Our Story",
+            "Menu",
+            "Delivery",
+            "Contact"
+        ],
+        "copyright": "© 2026 Artisan Bakehouse. All rights reserved."
+    },
+    "seo": {
+        "title": "Artisan Bakehouse — Fresh Bakery Every Day",
+        "description": "Nikmati roti, pastry, cake, dan coffee premium dari Artisan Bakehouse.",
+        "keywords": "bakery, cake, pastry, artisan bakehouse, coffee",
+        "og_image": "tech2.png"
+    },
+    "domain": {
+        "name": "artisanbakehouse.com",
+        "status": "Connected"
+    },
+    "style": {
+        "primary": "#8b5e3c",
+        "secondary": "#f8efe8",
+        "background": "#faf7f3",
+        "text": "#3f2d20"
+    }
+}

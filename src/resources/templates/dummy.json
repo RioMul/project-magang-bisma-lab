@@ -1,0 +1,60 @@
+{
+    "editor_available": false,
+    "layout": "dummy",
+    "name": "Template Preview",
+    "header": {
+        "site_name": "Your Business",
+        "logo_text": "YOUR BRAND",
+        "badge": "PROFESSIONAL TEMPLATE",
+        "menu": [
+            "Home",
+            "About",
+            "Services",
+            "Contact"
+        ],
+        "button_text": "Get Started"
+    },
+    "body": {
+        "hero_title": "Professional Website Template",
+        "hero_highlight": "Coming Soon",
+        "hero_description": "Template ini sudah tersedia untuk pemesanan, tetapi Website Editor untuk template ini masih dalam tahap pengembangan.",
+        "hero_image": "tech1.png",
+        "button_text": "Explore",
+        "categories": [],
+        "promo_title": "Website Builder",
+        "promo_description": "Fitur editing website akan tersedia pada tahap pengembangan berikutnya.",
+        "products": []
+    },
+    "sidebar": {
+        "phone": "",
+        "address": "Indonesia",
+        "whatsapp": "",
+        "whatsapp_message": "",
+        "social_instagram": ""
+    },
+    "footer": {
+        "description": "Professional website template by Bisma Labs.",
+        "links": [
+            "About",
+            "Contact",
+            "Privacy"
+        ],
+        "copyright": "© 2026 Bisma Labs. All rights reserved."
+    },
+    "seo": {
+        "title": "Professional Website Template",
+        "description": "Professional website template by Bisma Labs.",
+        "keywords": "website template",
+        "og_image": "tech1.png"
+    },
+    "domain": {
+        "name": "",
+        "status": "Not Connected"
+    },
+    "style": {
+        "primary": "#0369a1",
+        "secondary": "#e0f2fe",
+        "background": "#f8fafc",
+        "text": "#1e293b"
+    }
+}

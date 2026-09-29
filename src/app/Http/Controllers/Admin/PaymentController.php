@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Services\TemplateContentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
+    public function __construct(
+        private TemplateContentService $templateContent
+    ) {}
+
     public function index(Request $request)
     {
         $totalInvoices = Payment::count();
@@ -84,12 +89,14 @@ class PaymentController extends Controller
         ]);
 
         DB::transaction(function () use ($payment, $validated) {
+            $oldStatus = $payment->status;
+            $newStatus = $validated['status'];
 
             $payment->update([
-                'status' => $validated['status'],
+                'status' => $newStatus,
             ]);
 
-            $orderStatus = match ($validated['status']) {
+            $orderStatus = match ($newStatus) {
                 'paid' => 'paid',
                 'failed' => 'failed',
                 'expired' => 'expired',
@@ -99,6 +106,25 @@ class PaymentController extends Controller
             $payment->order()->update([
                 'status' => $orderStatus,
             ]);
+
+            if (
+                $oldStatus !== 'paid' &&
+                $newStatus === 'paid'
+            ) {
+                $order = $payment->order()
+                    ->with('template')
+                    ->first();
+
+                if (
+                    $order &&
+                    $order->template &&
+                    $this->templateContent->isEditable(
+                        $order->template->slug
+                    )
+                ) {
+                    $this->templateContent->createUserCopy($order);
+                }
+            }
         });
 
         return back()->with(
