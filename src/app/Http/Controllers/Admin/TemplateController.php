@@ -19,8 +19,13 @@ class TemplateController extends Controller
                     ->where('name', 'like', "%{$search}%")
                     ->orWhere('slug', 'like', "%{$search}%")
             )
+            ->when(
+                $request->category,
+                fn ($query, $category) => $query
+                    ->whereHas('type', fn($q) => $q->where('name', $category))
+            )
             ->latest()
-            ->paginate(10)
+            ->paginate(9) // <-- UBAH BATAS DATA MENJADI 9 DI SINI
             ->withQueryString();
 
         return view('admin.templates.index', compact('templates'));
@@ -29,7 +34,6 @@ class TemplateController extends Controller
     public function create()
     {
         $types = TemplateType::orderBy('name')->get();
-
         return view('admin.templates.create', compact('types'));
     }
 
@@ -48,7 +52,6 @@ class TemplateController extends Controller
 
         $validated['slug'] = $validated['slug']
             ?: Str::slug($validated['name']);
-
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
 
@@ -62,7 +65,6 @@ class TemplateController extends Controller
     public function edit(Template $template)
     {
         $types = TemplateType::orderBy('name')->get();
-
         return view(
             'admin.templates.edit',
             compact('template', 'types')
@@ -89,7 +91,6 @@ class TemplateController extends Controller
 
         $validated['slug'] = $validated['slug']
             ?: Str::slug($validated['name']);
-
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
 

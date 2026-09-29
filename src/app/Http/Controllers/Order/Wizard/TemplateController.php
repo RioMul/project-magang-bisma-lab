@@ -31,7 +31,9 @@ class TemplateController extends Controller
             $query->where('name', 'like', '%' . $search . '%');
         }
 
-        $templates = $query->get();
+        // Terapkan paginate(9) untuk membentuk Grid 3x3 berserta navigasinya
+        $templates = $query->latest()->paginate(9)->withQueryString();
+
         $categories = TemplateType::pluck('name')->toArray();
         $selectedTemplateId = $this->orderSession->getTemplateId();
 

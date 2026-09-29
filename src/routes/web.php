@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/template/{slug}', [LandingController::class, 'templateDetail'])->name('template.detail');
 
+// Route baru untuk Live Preview Template
+Route::get('/template/{slug}/preview', [LandingController::class, 'templatePreview'])->name('template.preview');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

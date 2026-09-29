@@ -1,12 +1,12 @@
 @extends('layouts.app')
-
 @section('content')
 <style>
     [x-cloak] { display: none !important; }
 </style>
-
-<div class="min-h-screen bg-slate-50 py-12">
+<div class="min-h-screen bg-slate-50 py-12 pt-32">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {{-- STEPPER --}}
         <div class="flex items-center justify-center mb-10">
             <div class="flex items-center space-x-3 sm:space-x-4">
                 <div class="flex items-center text-sky-900">
@@ -14,19 +14,16 @@
                     <span class="ml-2 text-xs font-bold uppercase tracking-wider text-sky-900">Template</span>
                 </div>
                 <div class="w-8 sm:w-12 h-0.5 bg-slate-200"></div>
-
                 <div class="flex items-center text-slate-400">
                     <span class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 text-xs font-bold">2</span>
                     <span class="ml-2 text-xs font-semibold uppercase tracking-wider text-slate-400 hidden sm:inline">Domain</span>
                 </div>
                 <div class="w-8 sm:w-12 h-0.5 bg-slate-200"></div>
-
                 <div class="flex items-center text-slate-400">
                     <span class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 text-xs font-bold">3</span>
                     <span class="ml-2 text-xs font-semibold uppercase tracking-wider text-slate-400 hidden sm:inline">Paket</span>
                 </div>
                 <div class="w-8 sm:w-12 h-0.5 bg-slate-200"></div>
-
                 <div class="flex items-center text-slate-400">
                     <span class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 text-xs font-bold">4</span>
                     <span class="ml-2 text-xs font-semibold uppercase tracking-wider text-slate-400 hidden sm:inline">Checkout</span>
@@ -34,6 +31,7 @@
             </div>
         </div>
 
+        {{-- HEADER TEXT --}}
         <div class="text-center max-w-2xl mx-auto mb-8">
             <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                 Choose Your <span class="text-sky-900">Digital Canvas</span>
@@ -43,6 +41,7 @@
             </p>
         </div>
 
+        {{-- SEARCH BAR --}}
         <div class="max-w-xl mx-auto mb-8">
             <form action="{{ route('order.template') }}" method="GET" class="relative flex items-center">
                 <input type="hidden" name="category" value="{{ request('category', 'All') }}">
@@ -56,6 +55,7 @@
             </form>
         </div>
 
+        {{-- CATEGORY FILTER --}}
         <div class="flex items-center justify-center flex-wrap gap-2 mb-10">
             <a href="{{ route('order.template', ['category' => 'All', 'search' => request('search')]) }}" class="px-4 py-1.5 rounded-full text-xs font-semibold transition {{ ($selectedCategory ?? 'All') === 'All' ? 'bg-sky-900 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200' }}">All Templates</a>
             @foreach($categories as $category)
@@ -63,13 +63,14 @@
             @endforeach
         </div>
 
+        {{-- GRID TEMPLATE (3x3) --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @forelse($templates as $tmpl)
                 <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group">
                     
                     {{-- SLIDER GAMBAR TEMPLATE --}}
-                    <div class="aspect-[16/10] bg-slate-900 overflow-hidden relative" 
-                         x-data="{ activeSlide: 0, slides: [
+                    <div class="aspect-[16/10] bg-slate-900 overflow-hidden relative"
+                          x-data="{ activeSlide: 0, slides: [
                              '{{ asset($tmpl->images->where('is_primary', true)->first()->image_path ?? 'tech1.png') }}',
                              'https://placehold.co/600x400/e2e8f0/64748b?text=Preview+Fitur+1',
                              'https://placehold.co/600x400/e2e8f0/64748b?text=Preview+Mobile'
@@ -80,8 +81,12 @@
                         </template>
 
                         {{-- Tombol Geser (Hanya Muncul Saat di-Hover) --}}
-                        <button @click.prevent="activeSlide = activeSlide === 0 ? slides.length - 1 : activeSlide - 1" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">❮</button>
-                        <button @click.prevent="activeSlide = activeSlide === slides.length - 1 ? 0 : activeSlide + 1" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">❯</button>
+                        <button @click.prevent="activeSlide = activeSlide === 0 ? slides.length - 1 : activeSlide - 1" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button @click.prevent="activeSlide = activeSlide === slides.length - 1 ? 0 : activeSlide + 1" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
 
                         {{-- Indikator Titik --}}
                         <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
@@ -96,6 +101,7 @@
                             <h3 class="font-bold text-slate-900 text-base">{{ $tmpl->name }}</h3>
                             <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{{ $tmpl->type->name ?? 'Kategori' }}</span>
                         </div>
+
                         <div class="flex items-center gap-3 pt-2">
                             <a href="{{ route('template.detail', $tmpl->slug) }}" class="w-1/2 text-center py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">Detail</a>
                             <form action="{{ route('order.template.store') }}" method="POST" class="w-1/2">
@@ -112,6 +118,41 @@
                 </div>
             @endforelse
         </div>
+
+        {{-- FITUR PAGINATION --}}
+        @if($templates->hasPages())
+            <div class="mt-12 flex justify-center">
+                <div class="inline-flex items-center gap-1 bg-[#f8fafc] border border-slate-200 rounded-full px-2 py-1.5 shadow-sm">
+                    @if (!$templates->onFirstPage())
+                        <a href="{{ $templates->previousPageUrl() }}" class="w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-slate-200 rounded-full transition">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        </a>
+                    @endif
+
+                    @foreach ($templates->links()->elements as $element)
+                        @if (is_string($element))
+                            <span class="w-10 h-10 flex items-center justify-center text-slate-400 text-xs tracking-widest">{{ $element }}</span>
+                        @endif
+                        @if (is_array($element))
+                            @foreach ($element as $page => $url)
+                                @if ($page == $templates->currentPage())
+                                    <span class="w-10 h-10 flex items-center justify-center bg-[#0369a1] text-white rounded-full text-sm font-bold shadow-sm">{{ $page }}</span>
+                                @else
+                                    <a href="{{ $url }}" class="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-200 rounded-full text-sm font-bold transition">{{ $page }}</a>
+                                @endif
+                            @endforeach
+                        @endif
+                    @endforeach
+
+                    @if ($templates->hasMorePages())
+                        <a href="{{ $templates->nextPageUrl() }}" class="w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-slate-200 rounded-full transition">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    @endif
+                </div>
+            </div>
+        @endif
+
     </div>
 </div>
 @endsection

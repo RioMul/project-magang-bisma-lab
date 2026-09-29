@@ -44,9 +44,7 @@ class AuthController extends Controller
                 ->withInput($request->only('email'));
         }
 
-        return redirect()->intended(
-            route('admin.dashboard')
-        );
+        return redirect()->route('admin.dashboard');
     }
 
     public function logout(Request $request)

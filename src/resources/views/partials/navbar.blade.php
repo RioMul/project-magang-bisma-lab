@@ -2,8 +2,8 @@
     <div class="w-full max-w-[1400px] mx-auto px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
         {{-- LOGO --}}
         <a href="{{ route('home') }}" class="flex items-center shrink-0">
-            <img src="{{ asset('logo.png') }}"
-                 alt="BismaLabs Logo"
+            <img src="{{ asset('logo.png') }}" 
+                 alt="BismaLabs Logo" 
                  class="h-10 sm:h-12 w-auto object-contain transition duration-200 hover:scale-105"
                  onerror="this.onerror=null;this.src='https://placehold.co/150x45/0396c7/ffffff?text=BismaLabs';">
         </a>
@@ -45,9 +45,14 @@
                             <p class="text-xs text-gray-400">Masuk sebagai</p>
                             <p class="text-sm font-bold text-gray-800 truncate">{{ Auth::user()->email }}</p>
                         </div>
-                        <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-[#0396c7] transition">Dashboard</a>
+                        
+                        {{-- PERBAIKAN: Cek Role untuk mengarahkan ke Dashboard yang tepat --}}
+                        <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-[#0396c7] transition">Dashboard</a>
+                        
                         <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-cyan-50 hover:text-[#0396c7] transition">Settings</a>
+                        
                         <div class="border-t border-gray-100 my-1"></div>
+                        
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition font-medium">Keluar</button>
@@ -76,9 +81,9 @@
             <a href="{{ route('order.template') }}" class="mobile-link block px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-cyan-50 hover:text-[#0396c7] transition">Template</a>
             <a href="{{ route('order.domain') }}" class="mobile-link block px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-cyan-50 hover:text-[#0396c7] transition">Domain</a>
             <a href="{{ route('order.package') }}" class="mobile-link block px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-cyan-50 hover:text-[#0396c7] transition">Harga</a>
-
+            
             <div class="border-t border-gray-200 my-3"></div>
-
+            
             @auth
                 <div class="px-4 py-3">
                     <div class="flex items-center gap-3 mb-4">
@@ -94,8 +99,12 @@
                             <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
                         </div>
                     </div>
-                    <a href="{{ route('dashboard') }}" class="block px-4 py-3 mb-1 rounded-xl font-semibold text-gray-700 hover:bg-cyan-50 hover:text-[#0396c7] transition">Dashboard</a>
+                    
+                    {{-- PERBAIKAN: Cek Role untuk mengarahkan ke Dashboard yang tepat di Mobile --}}
+                    <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('dashboard') }}" class="block px-4 py-3 mb-1 rounded-xl font-semibold text-gray-700 hover:bg-cyan-50 hover:text-[#0396c7] transition">Dashboard</a>
+                    
                     <a href="{{ route('profile.edit') }}" class="block px-4 py-3 mb-1 rounded-xl font-semibold text-gray-700 hover:bg-cyan-50 hover:text-[#0396c7] transition">Settings</a>
+                    
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-left px-4 py-3 rounded-xl font-semibold text-red-600 hover:bg-red-50 transition">Keluar</button>
@@ -118,10 +127,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const mobileButton = document.getElementById('mobileMenuButton');
     const hamburgerIcon = document.getElementById('hamburgerIcon');
     const closeIcon = document.getElementById('closeIcon');
+
     if (!navbar || !mobileMenu || !mobileButton) return;
+
     let lastScrollY = window.scrollY;
     let ticking = false;
     const threshold = 8;
+
     function openMobileMenu() {
         mobileMenu.classList.remove('max-h-0', 'opacity-0', 'border-transparent');
         mobileMenu.classList.add('max-h-[650px]', 'opacity-100', 'border-gray-200');
@@ -130,6 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
         mobileButton.setAttribute('aria-expanded', 'true');
         navbar.classList.remove('-translate-y-full');
     }
+
     function closeMobileMenu() {
         mobileMenu.classList.add('max-h-0', 'opacity-0', 'border-transparent');
         mobileMenu.classList.remove('max-h-[650px]', 'opacity-100', 'border-gray-200');
@@ -137,28 +150,34 @@ document.addEventListener('DOMContentLoaded', function () {
         closeIcon.classList.add('hidden');
         mobileButton.setAttribute('aria-expanded', 'false');
     }
+
     mobileButton.addEventListener('click', function () {
         if (mobileButton.getAttribute('aria-expanded') === 'true') closeMobileMenu();
         else openMobileMenu();
     });
+
     document.querySelectorAll('.mobile-link').forEach(link => link.addEventListener('click', closeMobileMenu));
+
     window.addEventListener('scroll', function () {
         if (!ticking) {
             window.requestAnimationFrame(function () {
                 const currentScrollY = window.scrollY;
                 const difference = currentScrollY - lastScrollY;
                 const menuOpen = mobileButton.getAttribute('aria-expanded') === 'true';
+
                 if (currentScrollY <= 10) navbar.classList.remove('-translate-y-full');
                 else if (!menuOpen && Math.abs(difference) > threshold) {
                     if (difference > 0) navbar.classList.add('-translate-y-full');
                     else navbar.classList.remove('-translate-y-full');
                 }
+
                 lastScrollY = currentScrollY;
                 ticking = false;
             });
             ticking = true;
         }
     }, { passive: true });
+
     window.addEventListener('resize', function () { if (window.innerWidth >= 1024) closeMobileMenu(); });
 });
 </script>

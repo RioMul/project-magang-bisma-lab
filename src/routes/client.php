@@ -13,6 +13,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('client')->name('client.')->group(function () {
         Route::get('/website/edit', [WebsiteController::class, 'edit'])->name('website.edit');
         Route::put('/website', [WebsiteController::class, 'update'])->name('website.update');
+        // Route untuk iframe Live Preview
+        Route::get('/website/preview', [WebsiteController::class, 'preview'])->name('website.preview');
 
         Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
         Route::get('/pages/{id}/edit', [PageController::class, 'edit'])->name('pages.edit');
