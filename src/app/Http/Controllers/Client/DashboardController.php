@@ -7,7 +7,7 @@ use App\Models\Order;
 use App\Models\Package;
 use App\Models\Template;
 use App\Services\Order\OrderSessionService;
-use App\Services\TemplateContentService;
+use App\Services\Template\TemplateContentService;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -38,7 +38,6 @@ class DashboardController extends Controller
         $paidOrder = $orders
             ->where('status', 'paid')
             ->first();
-
         $pendingOrder = $orders
             ->where('status', 'pending')
             ->first();
@@ -103,41 +102,40 @@ class DashboardController extends Controller
             $systemStatus = 'inactive';
         }
 
+        // Variabel penentu hak akses editor
+        $editorAvailable = false;
         $canManageWebsite = false;
 
         if (
             $paidOrder &&
             $paidOrder->template
         ) {
-            $canManageWebsite =
-                $this->templateContent->isEditable(
-                    $paidOrder->template->slug
-                ) &&
-                $this->templateContent->userCopyExists(
-                    $paidOrder
-                );
+            // Cek apakah template tersebut mendukung editor JSON
+            $editorAvailable = $this->templateContent->isEditable(
+                $paidOrder->template->slug
+            );
+
+            // Website bisa dimanage jika editor tersedia dan file JSON user sudah dibuat
+            $canManageWebsite = 
+                $editorAvailable &&
+                $this->templateContent->userCopyExists($paidOrder);
         }
 
         $completedSteps = 0;
-
         if ($hasTemplate) {
             $completedSteps++;
         }
-
         if ($hasDomain) {
             $completedSteps++;
         }
-
         if ($hasPackage) {
             $completedSteps++;
         }
-
         if ($hasPaymentMethod) {
             $completedSteps++;
         }
 
         $totalSteps = 4;
-
         $progressPercentage = (int) round(
             ($completedSteps / $totalSteps) * 100
         );
@@ -151,45 +149,35 @@ class DashboardController extends Controller
                 'order.invoice',
                 $pendingOrder->order_number
             );
-
             $nextStepLabel = 'Lihat Pesanan';
-
             $nextStepDescription =
                 'Pesanan Anda sudah dibuat dan sedang menunggu proses verifikasi pembayaran.';
         } elseif (!$hasTemplate) {
             $nextStepRoute =
                 route('order.template');
-
             $nextStepLabel =
                 'Mulai Pesanan';
-
             $nextStepDescription =
                 'Pilih template website untuk mulai membuat website Anda.';
         } elseif (!$hasDomain) {
             $nextStepRoute =
                 route('order.domain');
-
             $nextStepLabel =
                 'Lanjutkan';
-
             $nextStepDescription =
                 'Template sudah dipilih. Lanjutkan dengan memilih domain untuk website Anda.';
         } elseif (!$hasPackage) {
             $nextStepRoute =
                 route('order.package');
-
             $nextStepLabel =
                 'Lanjutkan';
-
             $nextStepDescription =
                 'Domain sudah dipilih. Selanjutnya tentukan paket website yang sesuai.';
         } elseif (!$hasPaymentMethod) {
             $nextStepRoute =
                 route('order.checkout');
-
             $nextStepLabel =
                 'Lanjutkan Pembayaran';
-
             $nextStepDescription =
                 'Semua kebutuhan website sudah dipilih. Tinggal menyelesaikan pembayaran.';
         }
@@ -234,6 +222,7 @@ class DashboardController extends Controller
                 'planName',
                 'templateName',
                 'systemStatus',
+                'editorAvailable',
                 'canManageWebsite',
                 'pendingPaymentUrl',
                 'pendingOrderExpiresAt',

@@ -48,13 +48,13 @@ class TemplateController extends Controller
 
         $templates->getCollection()->transform(
             function ($template) {
-                $content = $this->templateContent->get(
+                // PERBAIKAN: Menggunakan getMaster() bukan get()
+                $content = $this->templateContent->getMaster(
                     $template->slug
                 );
 
                 $template->editor_available =
                     $content['editor_available'] ?? false;
-
                 $template->template_content =
                     $content;
 
@@ -63,7 +63,6 @@ class TemplateController extends Controller
         );
 
         $categories = TemplateType::pluck('name')->toArray();
-
         $selectedTemplateId =
             $this->orderSession->getTemplateId();
 
