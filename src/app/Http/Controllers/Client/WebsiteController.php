@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Services\TemplateContentService;
+use App\Services\Template\TemplateContentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class WebsiteController extends Controller
 {
@@ -94,18 +93,18 @@ class WebsiteController extends Controller
 
         if ($tab === 'seo') {
             $website['seo']['title'] = $request->input(
-                'meta_title',
+                'seo_title',
                 $website['seo']['title'] ?? ''
             );
 
             $website['seo']['description'] = $request->input(
-                'meta_description',
+                'seo_description',
                 $website['seo']['description'] ?? ''
             );
 
-            if ($request->filled('keywords')) {
+            if ($request->filled('seo_keywords')) {
                 $website['seo']['keywords'] =
-                    $request->input('keywords');
+                    $request->input('seo_keywords');
             }
         }
 
@@ -144,6 +143,18 @@ class WebsiteController extends Controller
                     $website['header']['site_name'] ?? ''
                 );
 
+            $website['header']['logo_text'] =
+                $request->input(
+                    'logo_text',
+                    $website['header']['logo_text'] ?? ''
+                );
+
+            $website['header']['badge'] =
+                $request->input(
+                    'badge',
+                    $website['header']['badge'] ?? ''
+                );
+
             $website['header']['button_text'] =
                 $request->input(
                     'button_text',
@@ -160,6 +171,12 @@ class WebsiteController extends Controller
                     $website['body']['hero_title'] ?? ''
                 );
 
+            $website['body']['hero_highlight'] =
+                $request->input(
+                    'hero_highlight',
+                    $website['body']['hero_highlight'] ?? ''
+                );
+
             $website['body']['hero_description'] =
                 $request->input(
                     'hero_description',
@@ -172,9 +189,21 @@ class WebsiteController extends Controller
                     $website['body']['button_text'] ?? ''
                 );
 
-            if ($request->filled('theme_color')) {
-                $website['body']['theme_color'] =
-                    $request->input('theme_color');
+            $website['body']['promo_title'] =
+                $request->input(
+                    'promo_title',
+                    $website['body']['promo_title'] ?? ''
+                );
+
+            $website['body']['promo_description'] =
+                $request->input(
+                    'promo_description',
+                    $website['body']['promo_description'] ?? ''
+                );
+
+            if ($request->filled('theme_primary')) {
+                $website['style']['primary'] =
+                    $request->input('theme_primary');
             }
 
             if ($request->hasFile('hero_image')) {
@@ -200,6 +229,24 @@ class WebsiteController extends Controller
                 $request->input(
                     'address',
                     $website['sidebar']['address'] ?? ''
+                );
+
+            $website['sidebar']['whatsapp'] =
+                $request->input(
+                    'whatsapp',
+                    $website['sidebar']['whatsapp'] ?? ''
+                );
+
+            $website['sidebar']['whatsapp_message'] =
+                $request->input(
+                    'whatsapp_message',
+                    $website['sidebar']['whatsapp_message'] ?? ''
+                );
+
+            $website['sidebar']['social_instagram'] =
+                $request->input(
+                    'social_instagram',
+                    $website['sidebar']['social_instagram'] ?? ''
                 );
 
             return;

@@ -6,7 +6,10 @@
 
     <title>@yield('title', 'Client Area | Bisma Labs')</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite([
+        'resources/css/app.css',
+        'resources/js/app.js'
+    ])
 
     <style>
         [x-cloak] {
@@ -20,9 +23,11 @@
 <body class="bg-[#f7f8fc] text-slate-800 antialiased overflow-hidden">
 
 @php
-    $canManageWebsite = \App\Models\Order::where('user_id', auth()->id())
-        ->where('status', 'paid')
-        ->exists();
+    $templateContentService =
+        app(\App\Services\Template\TemplateContentService::class);
+
+    $canManageWebsite =
+        $templateContentService->canManageWebsite();
 @endphp
 
 <div
