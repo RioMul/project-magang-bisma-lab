@@ -22,10 +22,10 @@ class TemplateController extends Controller
             ->when(
                 $request->category,
                 fn ($query, $category) => $query
-                    ->whereHas('type', fn($q) => $q->where('name', $category))
+                    ->whereHas('type', fn ($q) => $q->where('name', $category))
             )
             ->latest()
-            ->paginate(9) // <-- UBAH BATAS DATA MENJADI 9 DI SINI
+            ->paginate(9)
             ->withQueryString();
 
         return view('admin.templates.index', compact('templates'));
@@ -34,6 +34,7 @@ class TemplateController extends Controller
     public function create()
     {
         $types = TemplateType::orderBy('name')->get();
+
         return view('admin.templates.create', compact('types'));
     }
 
@@ -52,6 +53,7 @@ class TemplateController extends Controller
 
         $validated['slug'] = $validated['slug']
             ?: Str::slug($validated['name']);
+
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
 
@@ -65,9 +67,12 @@ class TemplateController extends Controller
     public function edit(Template $template)
     {
         $types = TemplateType::orderBy('name')->get();
+
+        $templateData = $this->getTemplateData($template);
+
         return view(
             'admin.templates.edit',
-            compact('template', 'types')
+            compact('template', 'types', 'templateData')
         );
     }
 
@@ -91,6 +96,7 @@ class TemplateController extends Controller
 
         $validated['slug'] = $validated['slug']
             ?: Str::slug($validated['name']);
+
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
 
@@ -116,5 +122,24 @@ class TemplateController extends Controller
             'success',
             'Template berhasil dihapus.'
         );
+    }
+
+    private function getTemplateData(Template $template): array
+    {
+        $path = resource_path('templates/' . $template->slug . '.json');
+
+        if (!file_exists($path)) {
+            return [];
+        }
+
+        $content = file_get_contents($path);
+
+        if (!$content) {
+            return [];
+        }
+
+        $data = json_decode($content, true);
+
+        return is_array($data) ? $data : [];
     }
 }
