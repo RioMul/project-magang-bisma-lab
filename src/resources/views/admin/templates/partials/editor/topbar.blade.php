@@ -25,6 +25,7 @@
             </a>
 
             <div>
+
                 <div class="flex items-center gap-2">
 
                     <h1 class="text-lg font-bold text-slate-900">
@@ -32,13 +33,17 @@
                     </h1>
 
                     @if($template->is_active)
+
                         <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[9px] font-bold uppercase tracking-wider">
                             Active
                         </span>
+
                     @else
+
                         <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[9px] font-bold uppercase tracking-wider">
                             Inactive
                         </span>
+
                     @endif
 
                 </div>
@@ -46,6 +51,7 @@
                 <p class="text-xs text-slate-400 mt-0.5">
                     Edit template content and appearance
                 </p>
+
             </div>
 
         </div>
@@ -65,7 +71,8 @@
             @endif
 
             <button
-                type="button"
+                type="submit"
+                form="template-editor-form"
                 class="px-4 py-2.5 rounded-xl bg-[#0369a1] hover:bg-[#027ea7] text-white text-xs font-semibold transition shadow-sm"
             >
                 Save Changes

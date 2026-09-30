@@ -1,7 +1,7 @@
 {
     "editor_available": true,
     "layout": "shop",
-    "name": "Nexus Corporate",
+    "name": "Pertamina CEO",
     "header": {
         "site_name": "Nexus Store",
         "logo_text": "NEXUS",
@@ -21,6 +21,8 @@
         "hero_description": "Temukan berbagai produk pilihan dengan harga terbaik dan pengalaman belanja yang sederhana.",
         "hero_image": "tech1.png",
         "button_text": "Belanja Sekarang",
+        "promo_title": "Promo Pilihan Minggu Ini",
+        "promo_description": "Dapatkan penawaran khusus untuk produk pilihan Nexus Store.",
         "categories": [
             "Elektronik",
             "Fashion",
@@ -28,8 +30,6 @@
             "Aksesoris",
             "Rumah Tangga"
         ],
-        "promo_title": "Promo Pilihan Minggu Ini",
-        "promo_description": "Dapatkan penawaran khusus untuk produk pilihan Nexus Store.",
         "products": [
             {
                 "name": "Wireless Headphone Pro",
@@ -90,13 +90,13 @@
     },
     "footer": {
         "description": "Nexus Store menyediakan berbagai produk pilihan untuk kebutuhan sehari-hari.",
+        "copyright": "© 2026 Nexus Store. All rights reserved.",
         "links": [
             "Tentang Kami",
             "Bantuan",
             "Kebijakan Privasi",
             "Syarat & Ketentuan"
-        ],
-        "copyright": "© 2026 Nexus Store. All rights reserved."
+        ]
     },
     "seo": {
         "title": "Nexus Store — Belanja Produk Pilihan",
