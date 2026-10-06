@@ -113,56 +113,56 @@
                 <div
                     x-show="activeSection === 'general'"
                 >
-                    @include('admin.templates.partials.seactions.general')
+                    @include('admin.templates.partials.editor.sections.general')
                 </div>
 
                 <div
                     x-show="activeSection === 'header'"
                     style="display: none;"
                 >
-                    @include('admin.templates.partials.seactions.header')
+                    @include('admin.templates.partials.editor.sections.header')
                 </div>
 
                 <div
                     x-show="activeSection === 'hero'"
                     style="display: none;"
                 >
-                    @include('admin.templates.partials.seactions.hero')
+                    @include('admin.templates.partials.editor.sections.hero')
                 </div>
 
                 <div
                     x-show="activeSection === 'products'"
                     style="display: none;"
                 >
-                    @include('admin.templates.partials.seactions.products')
+                    @include('admin.templates.partials.editor.sections.products')
                 </div>
 
                 <div
                     x-show="activeSection === 'contact'"
                     style="display: none;"
                 >
-                    @include('admin.templates.partials.seactions.contact')
+                    @include('admin.templates.partials.editor.sections.contact')
                 </div>
 
                 <div
                     x-show="activeSection === 'footer'"
                     style="display: none;"
                 >
-                    @include('admin.templates.partials.seactions.footer')
+                    @include('admin.templates.partials.editor.sections.footer')
                 </div>
 
                 <div
                     x-show="activeSection === 'seo'"
                     style="display: none;"
                 >
-                    @include('admin.templates.partials.seactions.seo')
+                    @include('admin.templates.partials.editor.sections.seo')
                 </div>
 
                 <div
                     x-show="activeSection === 'appearance'"
                     style="display: none;"
                 >
-                    @include('admin.templates.partials.seactions.appearance')
+                    @include('admin.templates.partials.editor.sections.appearance')
                 </div>
 
             </form>

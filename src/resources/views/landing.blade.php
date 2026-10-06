@@ -112,57 +112,171 @@
         </div>
     </section>
 
-    {{-- 3 PREVIEW TEMPLATE AJA --}}
-    <section id="templates-section" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-6 sm:px-10">
-            <div class="text-center max-w-2xl mx-auto mb-16">
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">Pilih Desain Sesuai Industri Anda</h2>
-                <p class="text-base sm:text-lg text-slate-600 mt-4">Ratusan template siap pakai yang didesain untuk membantu bisnis Anda tampil profesional.</p>
-            </div>
+{{-- 3 PREVIEW TEMPLATE AJA --}}
+<section id="templates-section" class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-6 sm:px-10">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                @forelse ($templates->take(3) as $template)
-                    <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-md flex flex-col justify-between hover:shadow-xl transition duration-200">
-                        <div class="h-64 bg-slate-900 overflow-hidden relative group">
-                            <img src="{{ asset($template->images->where('is_primary', true)->first()->image_path ?? 'jpg1.jpg') }}" alt="{{ $template->name }}" onerror="this.onerror=null; this.src='{{ asset('jpg1.jpg') }}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                            <span class="absolute top-4 right-4 text-xs font-bold px-3 py-1 bg-white/95 rounded-lg text-slate-800 shadow-sm">
-                                {{ $template->type->name ?? 'Template' }}
-                            </span>
-                        </div>
-                        <div class="p-8">
-                            <h3 class="font-extrabold text-slate-900 text-xl sm:text-2xl mb-2">{{ $template->name }}</h3>
-                            <p class="text-sm sm:text-base text-slate-600 line-clamp-2 leading-relaxed mb-6">{{ $template->description }}</p>
-                            <div class="flex items-center gap-3">
-                                <a href="{{ route('template.preview', $template->slug ?? $template->id) }}" target="_blank" class="w-1/2 py-3.5 text-center text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition">
-                                    Preview
-                                </a>
-                                <form action="{{ route('order.template.store') }}" method="POST" class="w-1/2">
-                                    @csrf
-                                    <input type="hidden" name="template_id" value="{{ $template->id }}">
-                                    <button type="submit" class="w-full py-3.5 text-center text-sm font-black bg-[#0396c7] hover:bg-[#027ea7] text-white rounded-xl shadow-md transition">
-                                        Use Template
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-span-full py-20 text-center border-2 border-dashed border-slate-200 rounded-3xl">
-                        <p class="text-slate-500 font-bold">Belum ada template yang tersedia.</p>
-                    </div>
-                @endforelse
-            </div>
+        <div class="text-center max-w-2xl mx-auto mb-16">
 
-            <div class="mt-14 text-center">
-                <a href="{{ route('order.template') }}" class="inline-flex items-center gap-3 px-10 py-4 bg-slate-100 hover:bg-slate-200 text-slate-800 text-base font-extrabold rounded-2xl transition">
-                    <span>Lihat Semua Template</span>
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
-                </a>
-            </div>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
+                Pilih Desain Sesuai Industri Anda
+            </h2>
+
+            <p class="text-base sm:text-lg text-slate-600 mt-4">
+                Ratusan template siap pakai yang didesain untuk membantu bisnis Anda tampil profesional.
+            </p>
+
         </div>
-    </section>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            @forelse ($templates->take(3) as $template)
+
+                @php
+                    $templateData = $template->template_data ?? [];
+
+                    $templateHeader = $templateData['header'] ?? [];
+                    $templateBody = $templateData['body'] ?? [];
+                    $templateStyle = $templateData['style'] ?? [];
+
+                    $templateName =
+                        $templateData['name']
+                        ?? $templateHeader['site_name']
+                        ?? $template->name;
+
+                    $templateDescription =
+                        $templateBody['hero_description']
+                        ?? $template->description;
+
+                    $templateImage =
+                        $templateBody['hero_image']
+                        ?? $template->images
+                            ->where('is_primary', true)
+                            ->first()
+                            ->image_path
+                        ?? 'jpg1.jpg';
+
+                    $templatePrimary =
+                        $templateStyle['primary']
+                        ?? '#0396c7';
+                @endphp
+
+                <div
+                    class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-md flex flex-col justify-between hover:shadow-xl transition duration-200"
+                >
+
+                    <div class="h-64 bg-slate-900 overflow-hidden relative group">
+
+                        <img
+                            src="{{ asset($templateImage) }}"
+                            alt="{{ $templateName }}"
+                            onerror="this.onerror=null; this.src='{{ asset('jpg1.jpg') }}';"
+                            class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                        >
+
+                        <span
+                            class="absolute top-4 right-4 text-xs font-bold px-3 py-1 bg-white/95 rounded-lg text-slate-800 shadow-sm"
+                        >
+                            {{ $template->type->name ?? 'Template' }}
+                        </span>
+
+                    </div>
+
+                    <div class="p-8">
+
+                        <h3 class="font-extrabold text-slate-900 text-xl sm:text-2xl mb-2">
+                            {{ $templateName }}
+                        </h3>
+
+                        <p class="text-sm sm:text-base text-slate-600 line-clamp-2 leading-relaxed mb-6">
+                            {{ $templateDescription }}
+                        </p>
+
+                        <div class="flex items-center gap-3">
+
+                            <a
+                                href="{{ route('template.preview', $template->slug) }}"
+                                target="_blank"
+                                class="w-1/2 py-3.5 text-center text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition"
+                            >
+                                Preview
+                            </a>
+
+                            <form
+                                action="{{ route('order.template.store') }}"
+                                method="POST"
+                                class="w-1/2"
+                            >
+
+                                @csrf
+
+                                <input
+                                    type="hidden"
+                                    name="template_id"
+                                    value="{{ $template->id }}"
+                                >
+
+                                <button
+                                    type="submit"
+                                    style="background-color: {{ $templatePrimary }};"
+                                    class="w-full py-3.5 text-center text-sm font-black text-white rounded-xl shadow-md transition hover:opacity-90"
+                                >
+                                    Use Template
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                <div class="col-span-full py-20 text-center border-2 border-dashed border-slate-200 rounded-3xl">
+
+                    <p class="text-slate-500 font-bold">
+                        Belum ada template yang tersedia.
+                    </p>
+
+                </div>
+
+            @endforelse
+
+        </div>
+
+        <div class="mt-14 text-center">
+
+            <a
+                href="{{ route('order.template') }}"
+                class="inline-flex items-center gap-3 px-10 py-4 bg-slate-100 hover:bg-slate-200 text-slate-800 text-base font-extrabold rounded-2xl transition"
+            >
+
+                <span>
+                    Lihat Semua Template
+                </span>
+
+                <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M5 12h14M13 6l6 6-6 6"
+                    />
+                </svg>
+
+            </a>
+
+        </div>
+
+    </div>
+</section>
 
     {{-- PRICING --}}
     <section id="pricing-section" class="py-24 bg-slate-50 border-t border-slate-200">

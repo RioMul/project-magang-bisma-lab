@@ -20,31 +20,28 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-        <div>
+       <div>
 
-            <label class="block text-xs font-semibold text-slate-600 mb-2">
-                Primary Color
-            </label>
+    <label class="block text-xs font-semibold text-slate-600 mb-2">
+        Primary Color
+    </label>
 
-            <div class="flex gap-3">
+    <div class="flex gap-3">
 
-                <input
-                    type="color"
-                    name="style[primary]"
-                    value="{{ $style['primary'] ?? '#0369a1' }}"
-                    class="w-12 h-12 rounded-xl border border-slate-200 p-1 bg-white cursor-pointer"
-                >
-
-                <input
-                    type="text"
-                    name="style[primary]"
-                    value="{{ old('style.primary', $style['primary'] ?? '#0369a1') }}"
-                    class="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm"
-                >
-
-            </div>
-
-        </div>
+        <input
+            type="color"
+            value="{{ $style['primary'] ?? '#0369a1' }}"
+            class="w-12 h-12 rounded-xl border border-slate-200 p-1 bg-white cursor-pointer"
+            oninput="this.nextElementSibling.value = this.value"
+        >
+        <input
+            type="text"
+            name="style[primary]"
+            value="{{ old('style.primary', $style['primary'] ?? '#0369a1') }}"
+            class="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm"
+        >
+    </div>
+</div>
 
         <div>
 

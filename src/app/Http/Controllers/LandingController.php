@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Package;
 use App\Models\Template;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class LandingController extends Controller
 {
