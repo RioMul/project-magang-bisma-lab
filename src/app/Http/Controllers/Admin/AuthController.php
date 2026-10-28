@@ -10,7 +10,7 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        if (Auth::check() && Auth::user()->isAdmin()) {
+        if (Auth::guard('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -24,7 +24,10 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (!Auth::guard('admin')->attempt(
+            $credentials,
+            $request->boolean('remember')
+        )) {
             return back()
                 ->withErrors([
                     'email' => 'Email atau password admin tidak valid.',
@@ -34,24 +37,14 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        if (!Auth::user()->isAdmin()) {
-            Auth::logout();
-
-            return back()
-                ->withErrors([
-                    'email' => 'Akun tersebut bukan akun administrator.',
-                ])
-                ->withInput($request->only('email'));
-        }
-
         return redirect()->route('admin.dashboard');
     }
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::guard('admin')->logout();
 
-        $request->session()->invalidate();
+        $request->session()->regenerate();
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.login');

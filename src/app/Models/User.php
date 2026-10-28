@@ -37,6 +37,16 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    public function profile()
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function websites()
+    {
+        return $this->hasMany(UserWebsite::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->is_admin === true;

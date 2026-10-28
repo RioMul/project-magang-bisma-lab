@@ -12,12 +12,8 @@ class AdminMiddleware
         Request $request,
         Closure $next
     ): Response {
-        if (!$request->user()) {
+        if (!$request->user('admin')) {
             return redirect()->route('admin.login');
-        }
-
-        if (!$request->user()->isAdmin()) {
-            abort(403, 'Akses admin tidak diizinkan.');
         }
 
         return $next($request);

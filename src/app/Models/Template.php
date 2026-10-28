@@ -17,8 +17,15 @@ class Template extends Model
         'description',
         'demo_url',
         'difficulty',
-        'is_featured',
         'is_active',
+        'is_featured',
+        'price',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_featured' => 'boolean',
+        'price' => 'decimal:2',
     ];
 
     public function type()
@@ -36,8 +43,16 @@ class Template extends Model
         return $this->hasMany(TemplateReview::class);
     }
 
+    /**
+     * Relasi lama dipertahankan untuk pesanan lama.
+     */
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

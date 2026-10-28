@@ -3,6 +3,17 @@
 @section('title', 'Billing | Bisma Labs')
 
 @section('content')
+@php
+    $billingPeriodMonths = (int) ($currentOrderItem?->billing_period_months ?? 0);
+
+    $billingPeriodLabel = match ($billingPeriodMonths) {
+        1 => 'per bulan',
+        6 => 'per 6 bulan',
+        12 => 'per tahun',
+        default => null,
+    };
+@endphp
+
 <div class="space-y-6">
 
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -32,12 +43,18 @@
                 </div>
 
                 <h2 class="text-xl sm:text-2xl font-bold text-slate-900">
-                    {{ $latestOrder?->package?->name ?? 'Belum ada paket' }}
+                    {{ $currentOrderItem?->package?->name ?? 'Belum ada paket' }}
                 </h2>
 
                 <p class="text-sm text-slate-500 mt-1">
                     Paket website aktif Anda
                 </p>
+
+                @if($currentOrderItem?->template)
+                    <p class="text-sm text-slate-500 mt-1">
+                        Template: {{ $currentOrderItem->template->name }}
+                    </p>
+                @endif
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 lg:text-right">
@@ -45,16 +62,20 @@
                 <div>
                     <p class="text-xs text-slate-400">Renewal Date</p>
                     <p class="text-sm font-bold text-slate-800 mt-1">
-                        {{ $latestOrder?->website?->expires_at?->format('d M Y') ?? '-' }}
+                        {{ $currentOrderItem?->website_expires_at?->format('d M Y') ?? '-' }}
                     </p>
                 </div>
 
                 <div>
-                    <p class="text-xs text-slate-400">Monthly Billing</p>
+                    <p class="text-xs text-slate-400">Harga Paket</p>
                     <p class="text-lg font-bold text-slate-900 mt-1">
-                        @if($latestOrder?->package?->price_monthly)
-                            Rp {{ number_format($latestOrder->package->price_monthly, 0, ',', '.') }}
-                            <span class="text-xs font-medium text-slate-400">/month</span>
+                        @if($currentOrderItem)
+                            Rp {{ number_format((float) $currentOrderItem->package_price, 0, ',', '.') }}
+                            @if($billingPeriodLabel)
+                                <span class="text-xs font-medium text-slate-400">
+                                    /{{ $billingPeriodMonths === 12 ? 'tahun' : ($billingPeriodMonths === 6 ? '6 bulan' : 'bulan') }}
+                                </span>
+                            @endif
                         @else
                             -
                         @endif
@@ -63,6 +84,14 @@
 
             </div>
         </div>
+
+        @if($currentOrderItem?->price_breakdown_is_estimated)
+            <div class="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <p class="text-xs text-amber-800">
+                    Rincian harga paket pada pesanan lama merupakan estimasi hasil migrasi. Total transaksi tetap mengikuti total pesanan dan invoice.
+                </p>
+            </div>
+        @endif
 
         <div class="border-t border-slate-100 mt-6 pt-5 flex flex-col sm:flex-row gap-3">
             <button
@@ -170,7 +199,7 @@
 
                                 <td class="px-5 py-4">
                                     <p class="text-sm font-semibold text-slate-800">
-                                        {{ $order->order_number ?? $order->id }}
+                                        {{ $order->invoice?->invoice_number ?? $order->order_number ?? $order->id }}
                                     </p>
                                 </td>
 
@@ -182,7 +211,7 @@
 
                                 <td class="px-5 py-4">
                                     <p class="text-sm font-semibold text-slate-800">
-                                        Rp {{ number_format($order->total_amount ?? 0, 0, ',', '.') }}
+                                        Rp {{ number_format((float) ($order->invoice?->total_amount ?? $order->total_amount ?? 0), 0, ',', '.') }}
                                     </p>
                                 </td>
 
@@ -207,11 +236,11 @@
                                 </td>
 
                                 <td class="px-5 py-4 text-right">
-                                    <button
-                                        type="button"
+                                    <a
+                                        href="{{ route('order.invoice', $order->order_number) }}"
                                         class="text-sm font-semibold text-[#0396c7] hover:underline">
                                         Invoice
-                                    </button>
+                                    </a>
                                 </td>
 
                             </tr>

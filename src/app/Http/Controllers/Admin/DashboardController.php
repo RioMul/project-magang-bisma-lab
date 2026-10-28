@@ -4,10 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\Package;
+use App\Models\OrderItem;
 use App\Models\User;
-use App\Models\UserWebsite;
-use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
@@ -15,7 +13,8 @@ class DashboardController extends Controller
     {
         $totalUsers = User::where('is_admin', false)->count();
 
-        $activeWebsites = UserWebsite::where('status', 'active')->count();
+        $activeWebsites = OrderItem::where('website_status', 'active')
+            ->count();
 
         $monthlyRevenue = Order::where('status', 'paid')
             ->whereBetween('created_at', [
@@ -24,15 +23,29 @@ class DashboardController extends Controller
             ])
             ->sum('total_amount');
 
-        $expiredOrders = Order::where('status', 'expired')->count();
+        $expiredOrders = OrderItem::where('website_status', 'expired')
+            ->count();
 
         $recentOrders = Order::with([
             'user',
-            'package',
+            'orderItems.package',
+            'orderItems.template',
         ])
             ->latest()
-            ->limit(8)
+            ->limit(5)
             ->get();
+
+        $recentOrders->each(function (Order $order) {
+            $item = $order->orderItems->first();
+
+            if (!$item) {
+                return;
+            }
+
+            $order->setRelation('package', $item->package);
+            $order->setRelation('template', $item->template);
+            $order->setAttribute('domain_name', $item->domain_name);
+        });
 
         $paidOrders = Order::where('status', 'paid')->count();
 

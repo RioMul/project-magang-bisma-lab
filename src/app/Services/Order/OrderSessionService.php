@@ -7,7 +7,6 @@ use Carbon\Carbon;
 class OrderSessionService
 {
     private string $prefix = 'order.';
-
     private int $draftLifetimeMinutes = 60;
 
     public function start(): void
@@ -30,9 +29,7 @@ class OrderSessionService
             return false;
         }
 
-        return now()->greaterThanOrEqualTo(
-            Carbon::parse($expiresAt)
-        );
+        return now()->greaterThanOrEqualTo(Carbon::parse($expiresAt));
     }
 
     public function ensureActive(): bool
@@ -106,12 +103,19 @@ class OrderSessionService
         return session($this->prefix . 'domain_price', 0);
     }
 
-    public function setPackage(int|string $packageId): void
-    {
+    public function setPackage(
+        int|string $packageId,
+        int $billingPeriodMonths = 12
+    ): void {
         $this->start();
+
+        if (!in_array($billingPeriodMonths, [1, 6, 12], true)) {
+            $billingPeriodMonths = 12;
+        }
 
         session([
             $this->prefix . 'package_id' => $packageId,
+            $this->prefix . 'billing_period_months' => $billingPeriodMonths,
         ]);
     }
 
@@ -120,6 +124,31 @@ class OrderSessionService
         $this->ensureActive();
 
         return session($this->prefix . 'package_id');
+    }
+
+    public function getBillingPeriodMonths(): int
+    {
+        $this->ensureActive();
+
+        $months = (int) session(
+            $this->prefix . 'billing_period_months',
+            12
+        );
+
+        return in_array($months, [1, 6, 12], true)
+            ? $months
+            : 12;
+    }
+
+    public function getPackagePrice(
+        float|int $annualPrice,
+        float|int $monthlyPrice
+    ): float {
+        return match ($this->getBillingPeriodMonths()) {
+            1 => round((float) $monthlyPrice, 2),
+            6 => round((float) $annualPrice / 2, 2),
+            default => round((float) $annualPrice, 2),
+        };
     }
 
     public function setPaymentMethod(string $method): void
@@ -140,9 +169,7 @@ class OrderSessionService
 
     public function clearPaymentMethod(): void
     {
-        session()->forget(
-            $this->prefix . 'payment_method'
-        );
+        session()->forget($this->prefix . 'payment_method');
     }
 
     public function hasTemplate(): bool
@@ -206,6 +233,7 @@ class OrderSessionService
             $this->prefix . 'domain',
             $this->prefix . 'domain_price',
             $this->prefix . 'package_id',
+            $this->prefix . 'billing_period_months',
             $this->prefix . 'payment_method',
             $this->prefix . 'started_at',
             $this->prefix . 'expires_at',

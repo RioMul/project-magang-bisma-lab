@@ -14,6 +14,13 @@ class Payment extends Model
         'payment_method',
         'amount_paid',
         'status',
+        'transaction_id',
+        'paid_at',
+    ];
+
+    protected $casts = [
+        'amount_paid' => 'decimal:2',
+        'paid_at' => 'datetime',
     ];
 
     public function order()

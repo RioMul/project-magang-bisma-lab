@@ -6,18 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\Checkout\LoginRequest;
 use App\Http\Requests\Order\Checkout\PaymentRequest;
 use App\Http\Requests\Order\Checkout\RegisterRequest;
+use App\Models\DomainPrice;
+use App\Models\Invoice;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Template;
 use App\Models\User;
 use App\Services\Order\OrderSessionService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Exception;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class CheckoutController extends Controller
 {
@@ -28,28 +31,22 @@ class CheckoutController extends Controller
     public function index()
     {
         if (!$this->orderSession->ensureActive()) {
-            return redirect()
-                ->route('order.template')
+            return redirect()->route('order.template')
                 ->with('error', 'Sesi pemesanan telah berakhir. Silakan mulai kembali.');
         }
 
-        $missingSteps = $this->orderSession->getMissingSteps();
-
-        if (!empty($missingSteps)) {
+        if (!$this->orderSession->isComplete()) {
             if (!$this->orderSession->hasTemplate()) {
-                return redirect()
-                    ->route('order.template')
+                return redirect()->route('order.template')
                     ->with('error', 'Silakan pilih template terlebih dahulu.');
             }
 
             if (!$this->orderSession->hasDomain()) {
-                return redirect()
-                    ->route('order.domain')
+                return redirect()->route('order.domain')
                     ->with('error', 'Silakan pilih domain terlebih dahulu.');
             }
 
-            return redirect()
-                ->route('order.package')
+            return redirect()->route('order.package')
                 ->with('error', 'Silakan pilih paket terlebih dahulu.');
         }
 
@@ -61,11 +58,27 @@ class CheckoutController extends Controller
         );
 
         $domain = $this->orderSession->getDomain();
-        $domainPrice = $this->orderSession->getDomainPrice();
+        $billingPeriodMonths = $this->orderSession->getBillingPeriodMonths();
+
+        try {
+            $domainPrice = $this->getCurrentDomainPrice($domain);
+        } catch (ValidationException $exception) {
+            return redirect()->route('order.domain')
+                ->with('error', 'Harga domain tidak tersedia. Silakan pilih domain kembali.');
+        }
+
+        $templatePrice = (float) $template->price;
+        $packagePrice = $this->orderSession->getPackagePrice(
+            $package->price_annually,
+            $package->price_monthly
+        );
+
+        $totalAmount = round(
+            $templatePrice + $packagePrice + $domainPrice,
+            2
+        );
+
         $paymentMethod = $this->orderSession->getPaymentMethod();
-
-        $totalAmount = $package->price_annually + $domainPrice;
-
         $expiresAt = $this->orderSession->getExpiresAt();
         $remainingMinutes = $this->orderSession->getRemainingMinutes();
 
@@ -74,34 +87,29 @@ class CheckoutController extends Controller
                 'template',
                 'package',
                 'domain',
+                'templatePrice',
+                'packagePrice',
+                'billingPeriodMonths',
                 'domainPrice',
                 'totalAmount',
                 'paymentMethod',
                 'expiresAt',
                 'remainingMinutes'
             ))
-            ->header(
-                'Cache-Control',
-                'no-cache, no-store, max-age=0, must-revalidate'
-            )
+            ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
             ->header('Pragma', 'no-cache')
-            ->header(
-                'Expires',
-                'Sat, 01 Jan 2000 00:00:00 GMT'
-            );
+            ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
     }
 
     public function savePaymentMethod(PaymentRequest $request)
     {
         if (!$this->orderSession->ensureActive()) {
-            return redirect()
-                ->route('order.template')
+            return redirect()->route('order.template')
                 ->with('error', 'Sesi pemesanan telah berakhir. Silakan mulai kembali.');
         }
 
         if (!$this->orderSession->isComplete()) {
-            return redirect()
-                ->route('order.checkout')
+            return redirect()->route('order.checkout')
                 ->with('error', 'Data pesanan belum lengkap.');
         }
 
@@ -126,9 +134,7 @@ class CheckoutController extends Controller
             $request->boolean('remember')
         )) {
             return back()
-                ->withErrors([
-                    'login_email' => 'Email atau password salah.',
-                ])
+                ->withErrors(['login_email' => 'Email atau password salah.'])
                 ->withInput();
         }
 
@@ -142,13 +148,10 @@ class CheckoutController extends Controller
         $user = User::create([
             'name' => $request->validated('name'),
             'email' => $request->validated('email'),
-            'password' => Hash::make(
-                $request->validated('password')
-            ),
+            'password' => Hash::make($request->validated('password')),
         ]);
 
         Auth::login($user);
-
         $request->session()->regenerate();
 
         return redirect()->route('order.checkout');
@@ -157,72 +160,123 @@ class CheckoutController extends Controller
     public function finalize()
     {
         if (!$this->orderSession->ensureActive()) {
-            return redirect()
-                ->route('order.template')
+            return redirect()->route('order.template')
                 ->with('error', 'Sesi pemesanan telah berakhir. Silakan mulai kembali.');
         }
 
         if (!$this->orderSession->isComplete()) {
-            return redirect()
-                ->route('order.checkout')
+            return redirect()->route('order.checkout')
                 ->with('error', 'Data pesanan belum lengkap.');
         }
 
         if (!$this->orderSession->hasPaymentMethod()) {
-            return redirect()
-                ->route('order.checkout')
+            return redirect()->route('order.checkout')
                 ->with('error', 'Silakan pilih metode pembayaran terlebih dahulu.');
         }
 
         if (!Auth::check()) {
-            return redirect()
-                ->route('order.checkout')
+            return redirect()->route('order.checkout')
                 ->with('error', 'Silakan login atau daftar terlebih dahulu.');
         }
 
         try {
-            DB::beginTransaction();
+            $order = DB::transaction(function () {
+                $user = Auth::user();
 
-            $template = Template::findOrFail(
-                $this->orderSession->getTemplateId()
-            );
+                $template = Template::findOrFail(
+                    $this->orderSession->getTemplateId()
+                );
 
-            $package = Package::findOrFail(
-                $this->orderSession->getPackageId()
-            );
+                $package = Package::findOrFail(
+                    $this->orderSession->getPackageId()
+                );
 
-            $domain = $this->orderSession->getDomain();
-            $domainPrice = $this->orderSession->getDomainPrice();
+                $domain = $this->orderSession->getDomain();
+                $billingPeriodMonths =
+                    $this->orderSession->getBillingPeriodMonths();
 
-            $totalAmount = $package->price_annually + $domainPrice;
+                $templatePrice = (float) $template->price;
+                $packagePrice = $this->orderSession->getPackagePrice(
+                    $package->price_annually,
+                    $package->price_monthly
+                );
 
-            $order = Order::create([
-                'order_number' => 'BISMA-'
+                $domainPrice = $this->getCurrentDomainPrice($domain);
+
+                $totalAmount = round(
+                    $templatePrice + $packagePrice + $domainPrice,
+                    2
+                );
+
+                $orderNumber = 'BISMA-'
                     . now()->format('Ymd')
                     . '-'
-                    . strtoupper(Str::random(6)),
-                'user_id' => Auth::id(),
-                'template_id' => $template->id,
-                'package_id' => $package->id,
-                'customer_name' => Auth::user()->name,
-                'customer_email' => Auth::user()->email,
-                'customer_whatsapp' => '-',
-                'domain_name' => $domain,
-                'total_amount' => $totalAmount,
-                'payment_method' => $this->orderSession->getPaymentMethod(),
-                'status' => 'pending',
-            ]);
+                    . strtoupper(Str::random(6));
 
-            Payment::create([
-                'order_id' => $order->id,
-                'payment_method' => $this->orderSession->getPaymentMethod(),
-                'amount_paid' => $totalAmount,
-                'status' => 'pending',
-            ]);
+                $customerWhatsapp = $user->profile()
+                    ->value('whatsapp') ?: '-';
+
+                $order = Order::create([
+                    'order_number' => $orderNumber,
+                    'user_id' => $user->id,
+                    'template_id' => $template->id,
+                    'package_id' => $package->id,
+                    'customer_name' => $user->name,
+                    'customer_email' => $user->email,
+                    'customer_whatsapp' => $customerWhatsapp,
+                    'domain_name' => $domain,
+                    'total_amount' => $totalAmount,
+                    'payment_method' => $this->orderSession->getPaymentMethod(),
+                    'status' => 'pending',
+                ]);
+
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'template_id' => $template->id,
+                    'package_id' => $package->id,
+                    'domain_name' => $domain,
+                    'template_price' => $templatePrice,
+                    'package_price' => $packagePrice,
+                    'domain_price' => $domainPrice,
+                    'billing_period_months' => $billingPeriodMonths,
+                    'subtotal' => $totalAmount,
+                    'domain_status' => 'awaiting_provider',
+                    'website_status' => 'pending',
+                    'website_expires_at' => null,
+                    'renewal_of_order_item_id' => null,
+                    'price_breakdown_is_estimated' => false,
+                ]);
+
+                Payment::create([
+                    'order_id' => $order->id,
+                    'payment_method' => $this->orderSession->getPaymentMethod(),
+                    'amount_paid' => $totalAmount,
+                    'status' => 'pending',
+                    'transaction_id' => null,
+                    'paid_at' => null,
+                ]);
+
+                Invoice::create([
+                    'order_id' => $order->id,
+                    'invoice_number' => 'INV-' . $orderNumber,
+                    'status' => 'pending',
+                    'currency' => 'IDR',
+                    'customer_name' => $user->name,
+                    'customer_email' => $user->email,
+                    'customer_whatsapp' => $customerWhatsapp,
+                    'subtotal' => $totalAmount,
+                    'discount_amount' => 0,
+                    'tax_amount' => 0,
+                    'total_amount' => $totalAmount,
+                    'issued_at' => now(),
+                    'due_at' => null,
+                    'paid_at' => null,
+                ]);
+
+                return $order;
+            });
 
             $this->orderSession->clear();
-
-            DB::commit();
 
             return redirect()
                 ->route('order.invoice', $order->order_number)
@@ -230,16 +284,41 @@ class CheckoutController extends Controller
                     'payment_pending',
                     'Pesanan berhasil dibuat dan sedang menunggu verifikasi pembayaran.'
                 );
+        } catch (Throwable $exception) {
+            report($exception);
 
-        } catch (Exception $e) {
-            DB::rollBack();
-
-            return redirect()
-                ->route('order.checkout')
-                ->with(
-                    'error',
-                    'Terjadi kesalahan sistem saat memproses pesanan. Silakan coba lagi.'
-                );
+            return redirect()->route('order.checkout')
+                ->with('error', 'Terjadi kesalahan sistem saat memproses pesanan. Silakan coba lagi.');
         }
+    }
+
+    private function getCurrentDomainPrice(string $domain): float
+    {
+        $normalizedDomain = strtolower(trim($domain));
+
+        $prices = DomainPrice::query()
+            ->with('extension')
+            ->where('billing_period', 1)
+            ->whereHas('extension', function ($query) {
+                $query->where('is_active', true);
+            })
+            ->get()
+            ->sortByDesc(fn ($price) => strlen(
+                (string) $price->extension?->extension
+            ));
+
+        foreach ($prices as $price) {
+            $extension = strtolower(
+                (string) $price->extension?->extension
+            );
+
+            if ($extension !== '' && str_ends_with($normalizedDomain, $extension)) {
+                return (float) $price->price;
+            }
+        }
+
+        throw ValidationException::withMessages([
+            'domain' => 'Domain tidak ditemukan pada katalog harga yang tersedia.',
+        ]);
     }
 }

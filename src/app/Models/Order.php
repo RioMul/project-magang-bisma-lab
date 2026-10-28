@@ -12,6 +12,7 @@ class Order extends Model
     use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -30,9 +31,14 @@ class Order extends Model
         'notes',
     ];
 
+    protected $casts = [
+        'total_amount' => 'decimal:2',
+    ];
+
     protected static function boot()
     {
         parent::boot();
+
         static::creating(function ($model) {
             if (empty($model->id)) {
                 $model->id = (string) Str::uuid();
@@ -45,14 +51,27 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Relasi lama untuk kompatibilitas dengan pesanan lama.
+     * Pesanan baru sebaiknya membaca template dari orderItems.
+     */
     public function template()
     {
         return $this->belongsTo(Template::class);
     }
 
+    /**
+     * Relasi lama untuk kompatibilitas dengan pesanan lama.
+     * Pesanan baru sebaiknya membaca paket dari orderItems.
+     */
     public function package()
     {
         return $this->belongsTo(Package::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 
     public function payment()
@@ -60,6 +79,22 @@ class Order extends Model
         return $this->hasOne(Payment::class);
     }
 
+    /**
+     * Alias untuk kode yang membutuhkan nama relasi jamak.
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class);
+    }
+
+    /**
+     * Relasi lama dipertahankan selama fitur lama masih menggunakannya.
+     */
     public function website()
     {
         return $this->hasOne(UserWebsite::class);

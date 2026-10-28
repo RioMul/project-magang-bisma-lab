@@ -20,11 +20,23 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        $user = $request->user('web');
 
-        if ($request->user()->isAdmin()) {
-            return redirect()->route('admin.dashboard');
+        // Akun administrator harus masuk melalui /admin/login,
+        // yang menggunakan guard dan tabel admins.
+        if ($user && $user->isAdmin()) {
+            Auth::guard('web')->logout();
+            $request->session()->regenerate();
+
+            return redirect()
+                ->route('login')
+                ->withErrors([
+                    'email' => 'Akun administrator harus masuk melalui halaman login admin.',
+                ])
+                ->withInput($request->only('email'));
         }
+
+        $request->session()->regenerate();
 
         return redirect()->intended(
             route('dashboard', absolute: false)
@@ -36,7 +48,6 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

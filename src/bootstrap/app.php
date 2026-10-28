@@ -16,6 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
+
+        $middleware->redirectGuestsTo(
+            fn (Request $request): string => $request->is('admin', 'admin/*')
+                ? route('admin.login')
+                : route('login')
+        );
     })
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('orders:expire-pending')

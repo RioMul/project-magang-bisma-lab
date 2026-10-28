@@ -3,6 +3,7 @@
 namespace App\Services\Template;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -39,7 +40,9 @@ class TemplateContentService
 
     public function getMasterByOrder(Order $order): ?array
     {
-        $slug = $order->template?->slug;
+        $item = $this->getOrderItem($order);
+        $slug = $item?->template?->slug
+            ?? $order->template?->slug;
 
         if (!$slug) {
             return null;
@@ -48,7 +51,24 @@ class TemplateContentService
         return $this->getMaster($slug);
     }
 
+    /**
+     * Lokasi baru memakai ID order_item.
+     * Jika pesanan lama belum memiliki item, gunakan lokasi lama.
+     */
     public function getUserPath(Order $order): string
+    {
+        $item = $this->getOrderItem($order);
+
+        if ($item) {
+            return 'user_websites/order_items/item_'
+                . $item->id
+                . '.json';
+        }
+
+        return $this->getLegacyUserPath($order);
+    }
+
+    private function getLegacyUserPath(Order $order): string
     {
         return 'user_websites/user_'
             . $order->user_id
@@ -57,24 +77,41 @@ class TemplateContentService
             . '.json';
     }
 
+    private function getOrderItem(Order $order): ?OrderItem
+    {
+        return $order->orderItems()
+            ->with('template')
+            ->orderBy('id')
+            ->first();
+    }
+
     public function userCopyExists(Order $order): bool
     {
-        return Storage::disk('local')->exists(
-            $this->getUserPath($order)
-        );
+        $newPath = $this->getUserPath($order);
+
+        if (Storage::disk('local')->exists($newPath)) {
+            return true;
+        }
+
+        $legacyPath = $this->getLegacyUserPath($order);
+
+        return $legacyPath !== $newPath
+            && Storage::disk('local')->exists($legacyPath);
     }
 
     public function createUserCopy(Order $order): ?array
     {
-        $slug = $order->template?->slug;
+        $master = $this->getMasterByOrder($order);
 
-        if (!$slug || !$this->isEditable($slug)) {
+        if (!$master) {
             return null;
         }
 
-        $master = $this->getMaster($slug);
+        $item = $this->getOrderItem($order);
+        $slug = $item?->template?->slug
+            ?? $order->template?->slug;
 
-        if (!$master) {
+        if (!$slug || !$this->isEditable($slug)) {
             return null;
         }
 
@@ -93,13 +130,25 @@ class TemplateContentService
 
     public function getUserWebsite(Order $order): ?array
     {
-        $path = $this->getUserPath($order);
+        $newPath = $this->getUserPath($order);
 
-        if (!Storage::disk('local')->exists($path)) {
+        if (Storage::disk('local')->exists($newPath)) {
+            $content = Storage::disk('local')->get($newPath);
+            $website = json_decode($content, true);
+
+            return is_array($website) ? $website : null;
+        }
+
+        $legacyPath = $this->getLegacyUserPath($order);
+
+        if (
+            $legacyPath === $newPath
+            || !Storage::disk('local')->exists($legacyPath)
+        ) {
             return null;
         }
 
-        $content = Storage::disk('local')->get($path);
+        $content = Storage::disk('local')->get($legacyPath);
         $website = json_decode($content, true);
 
         return is_array($website) ? $website : null;
@@ -126,14 +175,20 @@ class TemplateContentService
 
         $orders = Order::where('user_id', Auth::id())
             ->where('status', 'paid')
-            ->with('template')
+            ->with([
+                'template',
+                'orderItems.template',
+            ])
             ->latest()
             ->get();
 
         foreach ($orders as $order) {
+            $item = $order->orderItems->first();
+            $template = $item?->template ?? $order->template;
+
             if (
-                $order->template &&
-                $this->isEditable($order->template->slug)
+                $template
+                && $this->isEditable($template->slug)
             ) {
                 return $order;
             }

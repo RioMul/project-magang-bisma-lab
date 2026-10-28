@@ -27,7 +27,8 @@ class DashboardController extends Controller
             ->with([
                 'template',
                 'package',
-                'website',
+                'orderItems.template',
+                'orderItems.package',
                 'payment',
             ])
             ->latest()
@@ -38,9 +39,13 @@ class DashboardController extends Controller
         $paidOrder = $orders
             ->where('status', 'paid')
             ->first();
+
         $pendingOrder = $orders
             ->where('status', 'pending')
             ->first();
+
+        $paidOrderItem = $paidOrder?->orderItems->first();
+        $pendingOrderItem = $pendingOrder?->orderItems->first();
 
         $hasPaidOrder = $paidOrder !== null;
         $hasPendingOrder = $pendingOrder !== null;
@@ -71,29 +76,34 @@ class DashboardController extends Controller
         }
 
         $activeOrder = $pendingOrder ?? $paidOrder;
+        $activeOrderItem = $pendingOrder
+            ? $pendingOrderItem
+            : $paidOrderItem;
 
         $domainName =
-            $activeOrder?->domain_name
+            $activeOrderItem?->domain_name
+            ?? $activeOrder?->domain_name
             ?? $this->orderSession->getDomain();
 
         $packageName =
-            $activeOrder?->package?->name
+            $activeOrderItem?->package?->name
+            ?? $activeOrder?->package?->name
             ?? $pendingPackage?->name;
 
         $planName =
-            $activeOrder?->package?->short_description
+            $activeOrderItem?->package?->short_description
+            ?? $activeOrder?->package?->short_description
             ?? $pendingPackage?->short_description;
 
         $templateName =
-            $activeOrder?->template?->name
+            $activeOrderItem?->template?->name
+            ?? $activeOrder?->template?->name
             ?? $pendingTemplate?->name;
 
-        $websiteStatus =
-            $paidOrder?->website?->status;
+        $websiteStatus = $paidOrderItem?->website_status;
 
         if ($hasPaidOrder) {
-            $systemStatus =
-                $websiteStatus ?: 'active';
+            $systemStatus = $websiteStatus ?: 'pending';
         } elseif ($hasPendingOrder) {
             $systemStatus = 'pending';
         } elseif ($hasPendingDraft) {
@@ -102,40 +112,43 @@ class DashboardController extends Controller
             $systemStatus = 'inactive';
         }
 
-        // Variabel penentu hak akses editor
         $editorAvailable = false;
         $canManageWebsite = false;
 
-        if (
-            $paidOrder &&
-            $paidOrder->template
-        ) {
-            // Cek apakah template tersebut mendukung editor JSON
+        $paidTemplate =
+            $paidOrderItem?->template
+            ?? $paidOrder?->template;
+
+        if ($paidOrder && $paidTemplate) {
             $editorAvailable = $this->templateContent->isEditable(
-                $paidOrder->template->slug
+                $paidTemplate->slug
             );
 
-            // Website bisa dimanage jika editor tersedia dan file JSON user sudah dibuat
-            $canManageWebsite = 
-                $editorAvailable &&
-                $this->templateContent->userCopyExists($paidOrder);
+            $canManageWebsite =
+                $editorAvailable
+                && $this->templateContent->userCopyExists($paidOrder);
         }
 
         $completedSteps = 0;
+
         if ($hasTemplate) {
             $completedSteps++;
         }
+
         if ($hasDomain) {
             $completedSteps++;
         }
+
         if ($hasPackage) {
             $completedSteps++;
         }
+
         if ($hasPaymentMethod) {
             $completedSteps++;
         }
 
         $totalSteps = 4;
+
         $progressPercentage = (int) round(
             ($completedSteps / $totalSteps) * 100
         );
@@ -149,53 +162,44 @@ class DashboardController extends Controller
                 'order.invoice',
                 $pendingOrder->order_number
             );
+
             $nextStepLabel = 'Lihat Pesanan';
+
             $nextStepDescription =
                 'Pesanan Anda sudah dibuat dan sedang menunggu proses verifikasi pembayaran.';
         } elseif (!$hasTemplate) {
-            $nextStepRoute =
-                route('order.template');
-            $nextStepLabel =
-                'Mulai Pesanan';
+            $nextStepRoute = route('order.template');
+            $nextStepLabel = 'Mulai Pesanan';
+
             $nextStepDescription =
                 'Pilih template website untuk mulai membuat website Anda.';
         } elseif (!$hasDomain) {
-            $nextStepRoute =
-                route('order.domain');
-            $nextStepLabel =
-                'Lanjutkan';
+            $nextStepRoute = route('order.domain');
+            $nextStepLabel = 'Lanjutkan';
+
             $nextStepDescription =
                 'Template sudah dipilih. Lanjutkan dengan memilih domain untuk website Anda.';
         } elseif (!$hasPackage) {
-            $nextStepRoute =
-                route('order.package');
-            $nextStepLabel =
-                'Lanjutkan';
+            $nextStepRoute = route('order.package');
+            $nextStepLabel = 'Lanjutkan';
+
             $nextStepDescription =
                 'Domain sudah dipilih. Selanjutnya tentukan paket website yang sesuai.';
         } elseif (!$hasPaymentMethod) {
-            $nextStepRoute =
-                route('order.checkout');
-            $nextStepLabel =
-                'Lanjutkan Pembayaran';
+            $nextStepRoute = route('order.checkout');
+            $nextStepLabel = 'Lanjutkan Pembayaran';
+
             $nextStepDescription =
                 'Semua kebutuhan website sudah dipilih. Tinggal menyelesaikan pembayaran.';
         }
 
-        $pendingPaymentUrl =
-            $hasPendingOrder
-            ? route(
-                'order.invoice',
-                $pendingOrder->order_number
-            )
+        $pendingPaymentUrl = $hasPendingOrder
+            ? route('order.invoice', $pendingOrder->order_number)
             : route('order.checkout');
 
-        $pendingOrderExpiresAt =
-            $pendingOrder?->created_at
+        $pendingOrderExpiresAt = $pendingOrder?->created_at
             ? $pendingOrder->created_at->copy()
-                ->addHours(
-                    $this->pendingOrderLifetimeHours
-                )
+                ->addHours($this->pendingOrderLifetimeHours)
             : null;
 
         $remainingDraftMinutes =
@@ -245,11 +249,7 @@ class DashboardController extends Controller
 
         Order::where('user_id', Auth::id())
             ->where('status', 'pending')
-            ->where(
-                'created_at',
-                '<=',
-                $expiredBefore
-            )
+            ->where('created_at', '<=', $expiredBefore)
             ->update([
                 'status' => 'expired',
             ]);

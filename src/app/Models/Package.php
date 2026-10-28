@@ -20,6 +20,13 @@ class Package extends Model
         'is_active',
     ];
 
+    protected $casts = [
+        'price_monthly' => 'decimal:2',
+        'price_annually' => 'decimal:2',
+        'is_popular' => 'boolean',
+        'is_active' => 'boolean',
+    ];
+
     public function features()
     {
         return $this->belongsToMany(Feature::class, 'package_features')
@@ -27,8 +34,16 @@ class Package extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Relasi lama dipertahankan untuk pesanan lama.
+     */
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

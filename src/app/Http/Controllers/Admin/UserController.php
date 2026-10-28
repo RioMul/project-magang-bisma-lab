@@ -48,8 +48,8 @@ class UserController extends Controller
                 'orders' => function ($query) {
                     $query->latest();
                 },
-                'orders.package',
-                'orders.website',
+                'orders.orderItems.template',
+                'orders.orderItems.package',
                 'orders.payment',
             ])
             ->withCount('orders')
@@ -60,8 +60,16 @@ class UserController extends Controller
                     $query
                         ->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhereHas('orders', function ($query) use ($search) {
-                            $query->where(
+                        ->orWhereHas('orders.orderItems', function ($itemQuery) use ($search) {
+                            $itemQuery->where(
+                                'domain_name',
+                                'like',
+                                "%{$search}%"
+                            );
+                        })
+                        // Fallback untuk pesanan lama yang belum memiliki item.
+                        ->orWhereHas('orders', function ($orderQuery) use ($search) {
+                            $orderQuery->where(
                                 'domain_name',
                                 'like',
                                 "%{$search}%"
@@ -83,13 +91,29 @@ class UserController extends Controller
                 });
             })
             ->when($request->filled('plan'), function ($query) use ($request) {
-                $query->whereHas('orders.package', function ($query) use ($request) {
-                    $query->where('id', $request->input('plan'));
+                $planId = $request->input('plan');
+
+                $query->where(function ($query) use ($planId) {
+                    $query->whereHas(
+                        'orders.orderItems.package',
+                        function ($packageQuery) use ($planId) {
+                            $packageQuery->where('packages.id', $planId);
+                        }
+                    )->orWhereHas(
+                        'orders.package',
+                        function ($packageQuery) use ($planId) {
+                            $packageQuery->where('packages.id', $planId);
+                        }
+                    );
                 });
             })
             ->latest()
             ->paginate(12)
             ->withQueryString();
+
+        $users->getCollection()->each(function (User $user) {
+            $this->prepareLegacyOrderDisplayData($user);
+        });
 
         $packages = Package::query()
             ->orderBy('name')
@@ -154,15 +178,16 @@ class UserController extends Controller
             'orders' => function ($query) {
                 $query->latest();
             },
-            'orders.template',
-            'orders.package',
+            'orders.orderItems.template',
+            'orders.orderItems.package',
             'orders.payment',
-            'orders.website',
         ]);
 
+        $this->prepareLegacyOrderDisplayData($user);
+
         $latestOrder = $user->orders->first();
+        $latestOrderItem = $latestOrder?->orderItems->first();
         $latestPayment = $latestOrder?->payment;
-        $latestWebsite = $latestOrder?->website;
 
         $status = $latestOrder?->status ?? 'new';
 
@@ -180,7 +205,7 @@ class UserController extends Controller
             default => 'bg-sky-50 text-sky-600',
         };
 
-        $websiteStatus = $latestWebsite?->status;
+        $websiteStatus = $latestOrderItem?->website_status;
 
         $websiteStatusLabel = $websiteStatus
             ? ucfirst($websiteStatus)
@@ -217,8 +242,8 @@ class UserController extends Controller
         return view('admin.users.detail_user', compact(
             'user',
             'latestOrder',
+            'latestOrderItem',
             'latestPayment',
-            'latestWebsite',
             'status',
             'statusLabel',
             'statusClass',
@@ -296,5 +321,43 @@ class UserController extends Controller
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'User berhasil dihapus.');
+    }
+
+    /**
+     * Menyediakan atribut tampilan lama dari order_items.
+     * Tidak membaca relasi atau tabel user_websites.
+     */
+    private function prepareLegacyOrderDisplayData(User $user): void
+    {
+        foreach ($user->orders as $order) {
+            $item = $order->orderItems->first();
+
+            if (!$item) {
+                continue;
+            }
+
+            $order->setAttribute(
+                'domain_name',
+                $item->domain_name
+            );
+
+            $order->setRelation(
+                'template',
+                $item->template
+            );
+
+            $order->setRelation(
+                'package',
+                $item->package
+            );
+
+            $order->setRelation(
+                'website',
+                (object) [
+                    'status' => $item->website_status,
+                    'expires_at' => $item->website_expires_at,
+                ]
+            );
+        }
     }
 }

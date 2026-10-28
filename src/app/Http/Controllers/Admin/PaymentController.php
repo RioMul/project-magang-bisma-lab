@@ -35,21 +35,29 @@ class PaymentController extends Controller
         $payments = Payment::query()
             ->with([
                 'order.user',
-                'order.package',
-                'order.website',
+                'order.orderItems.package',
+                'order.orderItems.template',
+                'order.invoice',
             ])
             ->when(
                 $request->filled('search'),
                 function ($query) use ($request) {
                     $search = $request->input('search');
 
-                    $query->whereHas('order', function ($query) use ($search) {
-                        $query->where(function ($query) use ($search) {
-                            $query
+                    $query->whereHas('order', function ($orderQuery) use ($search) {
+                        $orderQuery->where(function ($orderQuery) use ($search) {
+                            $orderQuery
                                 ->where('order_number', 'like', "%{$search}%")
                                 ->orWhere('customer_name', 'like', "%{$search}%")
                                 ->orWhere('customer_email', 'like', "%{$search}%")
-                                ->orWhere('domain_name', 'like', "%{$search}%");
+                                ->orWhere('domain_name', 'like', "%{$search}%")
+                                ->orWhereHas('orderItems', function ($itemQuery) use ($search) {
+                                    $itemQuery->where(
+                                        'domain_name',
+                                        'like',
+                                        "%{$search}%"
+                                    );
+                                });
                         });
                     });
                 }
@@ -66,6 +74,25 @@ class PaymentController extends Controller
             ->latest()
             ->paginate(15)
             ->withQueryString();
+
+        // Jaga tampilan tabel yang masih membaca relasi package pada Order.
+        // Nilainya berasal dari item pesanan.
+        $payments->getCollection()->each(function (Payment $payment) {
+            $order = $payment->order;
+
+            if (!$order) {
+                return;
+            }
+
+            $item = $order->orderItems->first();
+
+            if (!$item) {
+                return;
+            }
+
+            $order->setRelation('package', $item->package);
+            $order->setAttribute('domain_name', $item->domain_name);
+        });
 
         return view('admin.billing.index', compact(
             'payments',
@@ -89,11 +116,22 @@ class PaymentController extends Controller
         ]);
 
         DB::transaction(function () use ($payment, $validated) {
+            $payment = Payment::query()
+                ->with([
+                    'order.invoice',
+                    'order.orderItems.template',
+                ])
+                ->lockForUpdate()
+                ->findOrFail($payment->id);
+
             $oldStatus = $payment->status;
             $newStatus = $validated['status'];
 
             $payment->update([
                 'status' => $newStatus,
+                'paid_at' => $newStatus === 'paid'
+                    ? ($payment->paid_at ?? now())
+                    : null,
             ]);
 
             $orderStatus = match ($newStatus) {
@@ -103,23 +141,32 @@ class PaymentController extends Controller
                 default => 'pending',
             };
 
-            $payment->order()->update([
+            $order = $payment->order;
+
+            $order->update([
                 'status' => $orderStatus,
             ]);
 
+            if ($order->invoice) {
+                $order->invoice->update([
+                    'status' => $newStatus,
+                    'paid_at' => $newStatus === 'paid'
+                        ? ($order->invoice->paid_at ?? now())
+                        : null,
+                ]);
+            }
+
             if (
-                $oldStatus !== 'paid' &&
-                $newStatus === 'paid'
+                $oldStatus !== 'paid'
+                && $newStatus === 'paid'
             ) {
-                $order = $payment->order()
-                    ->with('template')
-                    ->first();
+                $orderItem = $order->orderItems->first();
+                $template = $orderItem?->template;
 
                 if (
-                    $order &&
-                    $order->template &&
-                    $this->templateContent->isEditable(
-                        $order->template->slug
+                    $template
+                    && $this->templateContent->isEditable(
+                        $template->slug
                     )
                 ) {
                     $this->templateContent->createUserCopy($order);
